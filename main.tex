@@ -1,0 +1,133 @@
+\documentclass[masterthesis]{fer}
+% Add the option upload to generate the final version which is uploaded to FERWeb
+% Dodaj opciju upload za generiranje konačne verzije koja se učitava na FERWeb
+
+\usepackage{blindtext}
+\usepackage{subfiles}
+
+
+%--- THESIS INFORMATION / PODACI O RADU ----------------------------------------
+
+% Title in English / Naslov na engleskom jeziku
+\title{Design and visualisation of mobile robot paths}
+
+% Title in Croatian / Naslov na hrvatskom jeziku
+\naslov{Dizajn i vizualizacija putanja robotskih vozila}
+
+% Thesis number / Broj rada
+\brojrada{1187}
+
+% Author / Autor
+\author{Ana Marija Devčić}
+
+% Mentor 
+\mentor{prof.dr.sc. Željka Mihajlović}
+
+% Date in English / Datum rada na engleskom jeziku
+\date{February, 2026}
+
+% Date in Croatian / Datum rada na hrvatskom jeziku
+\datum{veljača, 2026.}
+
+%-------------------------------------------------------------------------------
+
+
+\begin{document}
+
+
+% Titlepage is automatically generated / Naslovnica se automatski generira
+\maketitle
+
+
+%--- THESIS ASSIGNMENT / ZADATAK -----------------------------------------------
+
+% Thesis assignment is included from external file / Zadatak se ubacuje iz vanjske datoteke
+% Enter the filename of the PDF downloaded from FERWeb / Upiši ime PDF datoteke preuzete s FERWeb-a
+% \zadatak{filename.pdf}
+
+
+%--- ACKNOWLEDGMENT / ZAHVALE --------------------------------------------------
+
+\begin{zahvale}
+  % Write in the acknowledgment / Ovdje upišite zahvale
+  Thanks for the tea...
+\end{zahvale}
+
+% Page numbering starts from here / Odovud započinje numeriranje stranica
+\mainmatter
+
+% Table of contents is automatically generated / Sadržaj se automatski generira
+\tableofcontents
+
+% Introduction
+\subfile{Chapters/introduction.tex}
+
+% Robot vehicle path design
+\subfile{Chapters/chapter1.tex}
+
+% Parametric curves and splines
+\subfile{Chapters/chapter2.tex}
+
+% NURBS curve implementation
+\subfile{Chapters/chapter3.tex}
+
+% Robot path visualisation
+\subfile{Chapters/chapter4.tex}
+
+% Results
+\subfile{Chapters/chapter5.tex}
+
+% Applications and improvements
+\subfile{Chapters/chapter6.tex}
+
+\chapter{Conclusion}
+\label{chp:conclusion}
+
+\blindtext
+
+
+%--- REFERENCES / LITERATURA ---------------------------------------------------
+
+% References are automatically generated from the supplied .bib file / Literatura se automatski generira iz zadane .bib datoteke
+% Enter the name of the BibTeX file without .bib extension / Upiši ime BibTeX datoteke bez .bib nastavka
+\bibliography{references}
+
+
+%--- ABSTRACT / SAŽETAK --------------------------------------------------------
+
+% Abstract in English
+\begin{abstract}
+  Enter the abstract in English.
+  
+  \blindtext 
+\end{abstract}
+
+\begin{keywords}
+  the first keyword; the second keyword; the third keyword
+\end{keywords}
+
+
+% Sažetak na hrvatskom
+\begin{sazetak}
+  Unesite sažetak na hrvatskom.
+
+  \blindtext
+\end{sazetak}
+
+\begin{kljucnerijeci}
+  prva ključna riječ; druga ključna riječ; treća ključna riječ
+\end{kljucnerijeci}
+
+
+
+%--- APPENDIX / PRIVITCI -------------------------------------------------------
+
+% All following chapters will be denoted with an appendix and a letter / Sva poglavlja koja slijede će biti označena slovom i riječi privitak
+\backmatter
+
+\chapter{The Code}
+
+\Blindtext
+
+
+\end{document}
