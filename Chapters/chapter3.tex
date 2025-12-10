@@ -4,6 +4,22 @@
 \chapter{NURBS curve implementation}
 \label{chp:nurbsimplementation}
 
-\Blindtext
+For the purpose of path planning for autonomous guided vehicles, a C++ library
+was created for the implementation and manipulation of NURBS curves. The library
+utilizes the Eigen library for its linear algebra functions.
+
+The main data structure that is available to the user is the Curve class. A
+curve is divided into knot spans, or segments of the curve between two adjacent
+knots, which are represented by the *Span* utility class. A Curve object manages
+its own Span objects which are not visible outside of the class, nor is the Span
+class itself visible to the end user.
+
+The library implements all necessary functions for creating and using NURBS
+curves. Elementary transformations, such as translation and rotation, are not
+implemented It is important to note one of the properties of NURBS curves which
+is that all transformations applied to the set of control points are equivalent
+to transformations on the curve itself, meaning that the end-user may implement
+these functions themselves if necessary. The library only provides the minimum
+required functions to cover all operations exclusive to NURBS curves.
 
 \end{document}

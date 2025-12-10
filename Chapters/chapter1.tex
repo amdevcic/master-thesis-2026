@@ -4,6 +4,32 @@
 \chapter{Robot vehicle path design}
 \label{chp:robotpathdesign}
 
-\Blindtext
+Automated guided vehicles, or AGV-s for short, are mobile robots often used in
+logistics and other industries. They differ from autonomous mobile robots, or
+AMR-s, in the fact that AGV-s operate on predefined paths while AMR-s operate
+with no guidance. AMR-s do not have predefined paths, they use artificial
+intelligence and sensors and communicate with other robots in the network to
+plan out their own optimal paths. AGV-s often have a controller system which
+commands and controls all robots in the network. In some cases AMR-s might be
+the solution that requires less human intervention and input and may be more
+efficient, however AGV-s allow for more control and predictability.
+
+In the past, AGV-s used physical rails or magnetized or induction tracks placed
+in the environment to guide their movement. Modern AGV-s have their paths
+defined in a controller application which sends commands to dictate their
+movement. While driving, the robots use various sensors to verify their speed
+and position and correct their path if necessary. Some AGV-s require reflective
+stickers for navigation, though in other cases no changes need to be made to the
+environment. In that case the AGV uses a combination of LIDAR sensors and
+computer vision to verify their position in space and their speed.
+
+\section{Path continuity}
+
+Two mathematical concepts relevant to AGV navigation are geometric continuity
+and parametric continuity. Parametric continuity of the n-th degree, or $C^n$,
+is achieved when the parameters of the n-th derivative of a function are
+continuous. Geometric continuity of the n-th degree, or $G^n$, is a more relaxed
+form of parametric continuity, and is achieved if a function can be
+reparametrized as a $C^n$ continuous function.
 
 \end{document}

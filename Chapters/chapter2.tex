@@ -4,6 +4,100 @@
 \chapter{Parametric curves and splines}
 \label{chp:parametriccurves}
 
-\Blindtext
+Parametric curves are curves defined in a vector space by a parametric equation,
+which can be as simple as a parabola or a circle. In an n-dimensional space,
+these functions are often defined by one input — most commonly $t$ for time,
+limited to the interval $[0, 1]$ — and $n$ outputs. Each of the $n$ coordinates
+is its own independent function, and the combination of multiple coordinates
+creates a curve, plane, or hyperplane.
+
+Splines are a special kind of parametric curve that are defined as piecewise
+polynomials and are most often used to interpolate between a set of points.
+
+For the purpose of AGV path design, the most appropriate types of splines are
+Bezier curves, B-splines, and NURBS curves. What these three models have in
+common is that each curve is defined by its order, a set of control points in
+n-dimensional space and its basis functions. The position for a given t is a
+weighted sum of the curve's points, the weights being given by its basis
+functions. In other words, the curve interpolates between all of its given
+points.
+
+A curve appropriate for AGV path design needs to have three attributes: it must
+have geometric continuity of at least the third order, it must be easy to
+manipulate to maximize the usage of available space, and it must be able to be
+shaped in such a way to minimize the derivative of the curvature.
+
+\section{Bezier}
+
+Bezier curves are the simplest of the three. The most commonly used types of
+Bezier curves are quadratic and cubic curves, defined by three and four points
+respectively. The order of a Bezier curve is always equal to the number of
+control points minus one.
+
+A Bezier curve's basis functions are known as Bernstein polynomials. There are
+$n$ basis functions for a curve of the n-th degree. 
+
+\section{B-spline}
+
+B-splines, short for “basis splines,” are a generalization of Bezier curves.
+Unlike Bezier curves, which have static basis functions dependent on order, the
+basis functions of a B-spline can be modified using what is called a knot
+vector. The number of control points on a B-spline is arbitrary and not
+dependent on its order, unlike Beziers.
+
+The basis functions of a B-spline may be equal to zero in the range $(0, 1)$,
+meaning that a given basis function may not have influence on the entire curve,
+i.e. a given point on the curve may not be defined by all of its control points.
+This makes it possible to create complex shapes using a single B-spline.
+
+A B-spline of degree $p$ and with $N$ control points has a knot vector of size
+$N+p+1$. Each control point affects $p$ knots. By moving a knot's value up or
+down, we can make a section of the curve denser in control points while making
+the rest more sparse. Each span between two knots, i.e. between two values of
+$t$, can be seen as a separate curve controlled by $p+1$ points, much like a
+Bezier. However, this is a much better solution than chaining Bezier curves
+because the model guarantees geometric continuity between knot spans, while a
+chain of Beziers needs to be adjusted manually to be continuous.
+
+This is very close to what we want but it's still difficult to make sharp turns
+and precise movements without increasing the order of the curve, making it more
+expensive to compute in real-time. It is possible to achieve even more control
+over the shape of our curve using NURBS.
+
+\section{NURBS}
+
+NURBS curves are a further generalization of B-splines. The acronym stands for
+“non-uniform rational basis spline.”
+
+We describe NURBS as “non-uniform” because its basis functions do not need to be
+uniformly distributed. This is done using a knot vector which defines the
+distribution of a curve's basis functions. B-splines are also non-uniform,
+though this is not reflected in the name.
+
+We also describe NURBS as “rational” because they let us define a ratio, i.e. a
+weight, for each control point. This means that we can define the influence that
+a control point has on the overall curve. In terms of basis functions, this
+effectively scales a particular basis function in relation to its neighboring
+functions.
+
+Both of the aforementioned parametric curve models are subsets of NURBS curves.
+By limiting the parameters of a NURBS curve we can effectively create a Bezier,
+a B-spline, a rational Bezier and so on.
+
+Much like B-splines, a NURBS curve of degree p and N control points has a knot
+vector of size N+p+1 and each point affects p knots.
+
+A NURBS curve of degree p always has geometric continuity of the p-th degree
+along its length. Changing the knot vector does not affect this property unless
+there are p identical knots inside the curve (not on the endpoints) which
+creates a peak. This should be avoided, or prohibited to the end-user, if the
+goal is to maintain geometric continuity. Adjusting the weights does not affect
+geometric continuity in any possible case.
+
+Out of the three curve models presented, NURBS are the most flexible and allow
+for the most control, though they might be computationally expensive. However,
+having modifiable weights gives us a level of flexibility above B-splines
+without increasing the order, which makes them potentially more efficient than
+B-splines if used wisely.
 
 \end{document}
