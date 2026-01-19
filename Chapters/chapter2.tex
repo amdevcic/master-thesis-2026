@@ -34,8 +34,18 @@ Bezier curves are quadratic and cubic curves, defined by three and four points
 respectively. The order of a Bezier curve is always equal to the number of
 control points minus one.
 
+\begin{equation}
+    C(u) = \sum_{i=0}^{n}B_{i,n}(u)P_i
+\end{equation}
+
 A Bezier curve's basis functions are known as Bernstein polynomials. There are
-$n$ basis functions for a curve of the n-th degree. 
+$n$ basis functions for a curve of the n-th degree. \cite{primer} Bernstein
+polynomials are defined only by the curve's degree, meaning that all Bezier
+curves of the same degree have the same Bernstein polynomials.
+
+\begin{equation}
+    B_{i,n}(u) = \frac{n!}{i!(n-i)!} u^i (1-u)^{n-i}
+\end{equation}
 
 \section{B-spline}
 
@@ -44,6 +54,10 @@ Unlike Bezier curves, which have static basis functions dependent on order, the
 basis functions of a B-spline can be modified using what is called a knot
 vector. The number of control points on a B-spline is arbitrary and not
 dependent on its order, unlike Beziers.
+
+\begin{equation}
+    C(u) = \sum_{i=0}^{n}B_{i,n}(u)P_i
+\end{equation}
 
 The basis functions of a B-spline may be equal to zero in the range $(0, 1)$,
 meaning that a given basis function may not have influence on the entire curve,
@@ -94,10 +108,18 @@ creates a peak. This should be avoided, or prohibited to the end-user, if the
 goal is to maintain geometric continuity. Adjusting the weights does not affect
 geometric continuity in any possible case.
 
+\subsection{Comparison with Bezier curves and B-splines}
+
 Out of the three curve models presented, NURBS are the most flexible and allow
 for the most control, though they might be computationally expensive. However,
 having modifiable weights gives us a level of flexibility above B-splines
 without increasing the order, which makes them potentially more efficient than
 B-splines if used wisely.
+
+\subsection{Matrix representation of NURBS}
+
+\begin{equation}
+    t(p) = [t^0 t^1 t^2 \dots t^p]
+\end{equation}
 
 \end{document}
