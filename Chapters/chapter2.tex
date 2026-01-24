@@ -81,18 +81,24 @@ over the shape of our curve using NURBS.
 \section{NURBS}
 
 NURBS curves are a further generalization of B-splines. The acronym stands for
-“non-uniform rational basis spline.”
+“non-uniform rational basis spline.” \cite{Piegl_Tiller_1997}
+
+\begin{equation}
+    \mathbf{C}(u) = \sum_{i=1}^{k}\frac{N_{i,n}(u)w_i}{\sum_{j=1}^{k}N_{j,n}(u)w_j}
+\end{equation}
 
 We describe NURBS as “non-uniform” because its basis functions do not need to be
 uniformly distributed. This is done using a knot vector which defines the
-distribution of a curve's basis functions. B-splines are also non-uniform,
-though this is not reflected in the name.
+distribution of a curve's basis functions. B-splines are also non-uniform, as
+described earlier, though this is not reflected in the name.
 
 We also describe NURBS as “rational” because they let us define a ratio, i.e. a
 weight, for each control point. This means that we can define the influence that
 a control point has on the overall curve. In terms of basis functions, this
 effectively scales a particular basis function in relation to its neighboring
-functions.
+functions. Another way to interpret this is that all control points are defined
+in \emph{homogenous coordinates}, using the three coordinates $x, y$ and $w$,
+with the resulting spline being projected onto the plane $w=1$.
 
 Both of the aforementioned parametric curve models are subsets of NURBS curves.
 By limiting the parameters of a NURBS curve we can effectively create a Bezier,
@@ -118,8 +124,101 @@ B-splines if used wisely.
 
 \subsection{Matrix representation of NURBS}
 
+The general formula for NURBS evaluation can be expressed in the form of a
+matrix making it more appropriate for programmatic computation. \cite{731996}
+
+The basis matrix of a spline is defined recursively using Equation
+\eqref{eq:basisfunc}. This matrix is applicable to both NURBS and B-splines due
+to the fact that it depends only on the knot vector, which is a feature of both
+NURBS and B-splines, and does not depend on weights which are exclusive to
+NURBS. Equation \eqref{eq:basisfunc} calculates the $i$-th basis matrix, with
+$i$ being the index of a particular knot span. The elements on the main and
+first diagonal are calculated using Equation \eqref{eq:bf_elements}, with $t_i$
+being the $i$-th element of the knot vector. For a knot span of degree $p$,
+computing its basis matrix requires $i$ iterations with constant-time operations,
+resulting in $\mathit{O(p)}$ time complexity.
+
 \begin{equation}
-    t(p) = [t^0 t^1 t^2 \dots t^p]
+    \label{eq:basisfunc}
+    \begin{aligned}
+    \mathbf{M}^{k}(i) &=
+    \begin{bmatrix}
+    \mathbf{M}^{k-1}(i)\\ \mathbf{0}
+    \end{bmatrix}
+    \begin{bmatrix}
+    1-d_{0,i-k+2} & d_{0,i-k+2} &        & 0 \\
+                  & 1-d_{0,i-k+3} & d_{0,i-k+3} \\
+                  & \ddots        & \ddots \\
+    0             &               & 1-d_{0,i} & d_{0,i}
+    \end{bmatrix}
+    \\
+    &\quad +
+    \begin{bmatrix}
+    \mathbf{0} \\ \mathbf{M}^{k-1}(i)
+    \end{bmatrix}
+    \begin{bmatrix}
+    - d_{1,i-k+2} & d_{1,i-k+2} & & 0 \\
+                  & - d_{1,i-k+3} & d_{1,i-k+3} \\
+                  & \ddots        & \ddots \\
+    0             &               & - d_{1,i} & d_{1,i}
+    \end{bmatrix}
+    \\
+    \mathbf{M}^1(i) &= \begin{bmatrix} 1 \end{bmatrix}
+    \end{aligned}    
 \end{equation}
+
+\begin{equation}
+    \label{eq:bf_elements}
+    \begin{aligned}
+        d_{0, j} &= \frac{t_i-t_j}{t_{j+k-1}-t_j} \\
+        d_{1, j} &= \frac{t_{i+1}-t_i}{t_{j+k-1}-t_j}
+    \end{aligned}
+\end{equation}
+
+A point on a knot span at a given time value $u$ is evaluated using Equation
+\eqref{eq:nurbs_point}. Equation \eqref{eq:t_powseries} describes the power
+series of the time value $u$, while Equation \eqref{eq:nurbs_controlpts}
+describes the weighted control points and the weights affecting the knot span.
+Given that the vector $\mathbf{U}^k$ has a size of $1 \times k$, the matrix
+$\mathbf{M}^k$ a size of $k \times k$ and $\mathbf{P}^k$ a size of $k \times n$,
+we can tell that the result is a point in $n$-dimensional space. The denominator
+is always a scalar.
+
+\begin{equation}
+    \label{eq:nurbs_point}
+    \begin{aligned}
+        \mathbf{c}_{i-k+1}(u) &= \frac{\mathbf{U}^k\mathbf{M}^k(i)\mathbf{P}^k(i)}
+                                      {\mathbf{U}^k\mathbf{M}^k(i)\mathbf{W}^k(i)} \\
+                            &= \frac{\mathbf{R}(u)}{S(u)} 
+    \end{aligned}
+\end{equation}
+
+\begin{equation}
+    \label{eq:t_powseries}
+    \mathbf{U}^k = \begin{bmatrix}
+        1 & u & u^2 & \dots & u^{k-1}
+    \end{bmatrix}
+\end{equation}
+
+\begin{equation}
+    \label{eq:nurbs_controlpts}
+    \mathbf{P}^k(i) = \begin{bmatrix}
+        w_{i-k+1}\mathbf{V}_{i-k+1} \\
+        w_{i-k+2}\mathbf{V}_{i-k+2} \\
+        \vdots \\
+        w_{i}\mathbf{V}_{i} \\
+    \end{bmatrix} ,
+    \mathbf{W}^k(i) = \begin{bmatrix}
+        w_{i-k+1} \\
+        w_{i-k+2} \\
+        \vdots \\
+        w_{i} \\
+    \end{bmatrix}
+\end{equation}
+
+With the basis function, control points and weights all being known constants,
+evaluating a point on a knot span only requires computing the vector
+$\mathbf{U}^k$ and performing the necessary matrix multiplication instead of the
+iterative sum given by the original definition of NURBS.
 
 \end{document}

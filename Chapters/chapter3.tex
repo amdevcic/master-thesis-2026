@@ -16,6 +16,17 @@ to transformations on the curve itself, meaning that the end-user may implement
 these functions themselves if necessary. The library only provides the minimum
 required functions to cover all operations exclusive to NURBS curves.
 
+\section{The Eigen library}
+
+\emph{Eigen} is an open-source C++ template library for linear algebra
+\cite{eigenweb}. It is commonly used in the fields of computer graphics and
+robotics. The library provides class and function templates that allow for
+compile-time optimization, as well as \emph{SIMD} ("single instruction, multiple
+data") vectorization which drastically speeds up operations on vectors and
+matrices. Using \emph{Eigen's} built-in vector and matrix classes allows for
+interoperability with other libraries and end-user programs that use
+\emph{Eigen}, which is often the case in robotics.
+
 \section{Class structure}
 
 The main data structure that is available to the user is the \texttt{Curve} class. A
@@ -26,7 +37,19 @@ class itself visible to the end user.
 
 \subsection{Curve}
 
-The \texttt{Curve} class represents an array of continuous spans.
+The \texttt{Curve} class represents a complete NURBS curve, i.e. sequence of
+continuous knot spans. It stores some of the basic data of a particular curve,
+including its control points, knot vector, and order. Internally it is
+represented by an array of \emph{Span} objects containing the data required to
+evaluate many NURBS operations, though they are not accessible to the end-user.
+
+Methods that operate on a single span rather than the entire curve involve
+evaluating which spans are being affected, then propagating the function call to
+the \emph{Span} objects themselves. The \texttt{getKnotSpanIndex(t)} method
+returns the index of the knot span containing the value $t$. The result is
+always a single span and never a set of spans. If the value $t$ is itself a knot
+with a multiplicity greater than one, the function returns the first span after
+the multiple knot, and never the zero-length span containing the knot $t$.
 
 \subsection{Span}
 
@@ -35,17 +58,28 @@ shares its order with its parent curve and the number of control points is
 limited by its order. A single span does not have a knot vector. The shape of
 a span is defined by its basis function, which is in turn defined by the parent
 curve's knot vector. This basis function is defined in the code as a 4 by 4
-matrix.
+matrix and is stored in each span.
 
 For the sake of performance and memory efficiency, the \texttt{Span} class does
 not store its control points, but instead caches the dot product of the weights
 with the basis function, as well as the weighted control points with the basis
-function.
+function, as required by Equation \eqref{eq:nurbs_point} for the evaluation of a
+point on the curve.
 
+Whenever the curve's knot vector is modified, the affected spans recompute their
+basis functions as defined in Equation \eqref{eq:basisfunc}. Afterwards they
+recompute their cached control point and weight matrices.
 
 \section{Key method implementations}
 
 \subsection{Sampling methods}
+
+The \texttt{valueAt} method directly implements equation \eqref{eq:nurbs_point}
+using matrix notation. The helper function \texttt{\_powSeries(t, p)} computes the
+powers of $t$ up to $p$.
+
+The \texttt{polyline} method creates a sequence of line segments suitable for
+drawing or other purposes when only an approximation of the curve is needed.
 
 
 \subsection{Operations between two curves}

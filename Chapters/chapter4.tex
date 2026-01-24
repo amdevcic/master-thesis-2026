@@ -4,6 +4,21 @@
 \chapter{Robot path visualisation}
 \label{chp:robotpathvisual}
 
-\Blindtext
+\section{Qt Framework}
+
+For the purpose of testing the NURBS library and its functionalities, a program
+was created using Qt and C++.
+
+The actual visualization of NURBS paths was done using the QGraphicsView module.
+This module implements various drawing functions including those for drawing
+line segments and points.
+
+The \texttt{polyline} method defined in the NURBS library creates a sequence of
+line segments for the express purpose of quick and simple visualization. 
+
+\section{RViz}
+
+For testing in a simulation environment a plugin was created for the RViz tool
+often used for visualization of robots.
 
 \end{document}
