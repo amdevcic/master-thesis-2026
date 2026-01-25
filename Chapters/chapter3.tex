@@ -72,16 +72,59 @@ recompute their cached control point and weight matrices.
 
 \section{Key method implementations}
 
-\subsection{Sampling methods}
+\subsection{Creating a curve}
+
+The \texttt{Curve} class has several constructors, however the main intended
+method of instantiation is using a sequence of control points. The curve's order
+defaults to three but can be specified. The knot vector is optional, and if it
+is not provided a uniformly spaced knot vector is generated. As per the
+definition of NURBS, the number of control points for a curve of degree $p$ must
+be equal or greater than $p+1$. Given a sequence of $N$ control points, an order
+$p$ and a knot vector, the constructor generates $N-p$ \texttt{Span} objects.
+
+The \texttt{Span} constructor takes a subset of control points, a subset of a
+knot vector and the span's order. None of the arguments are optional. The first
+step is to generate the span's basis function based on the given knot vector
+segment and the given order. The basis function is computed according to
+Equation \eqref{eq:basisfunc} and stored in the span. Using the basis function
+and the weighted control point segment the span computes the product of the
+basis function with the control point matrix, and the basis function with the
+weight vector, named \texttt{cached\_vbf\_} and \texttt{cached\_wbf\_} respectively.
+With these data members calculated the span is returned and stored in the curve
+object.
+
+\subsection{Curve and span methods}
 
 The \texttt{valueAt} method directly implements equation \eqref{eq:nurbs_point}
 using matrix notation. The helper function \texttt{\_powSeries(t, p)} computes the
 powers of $t$ up to $p$.
 
-The \texttt{polyline} method creates a sequence of line segments suitable for
-drawing or other purposes when only an approximation of the curve is needed.
+The \texttt{length} method calculates the total length of a curve. 
+
+\subsection{Piecewise linear representation}
+
+The \texttt{polyline} method creates a sequence of points suitable for
+drawing or other purposes when only an approximation of the curve is needed. One
+possible way, and the simplest way to implement this would be to iterate over a
+fixed number of uniformly spaced $t$ values, however this can cause problems as
+it does not take into account the scale of the curve and its curvature; a curve
+could have the same number of points as another curve ten times its length, and
+a curve that is equal to a straight line could have the same number of points as
+one with many sharp twists.
+
+The \texttt{polyline} method takes a \texttt{flatness} argument which defines
+the tolerance for the distance between the linear approximation and the actual
+curve.
+
+For each segment of the curve, the method checks $p-1$ points and finds the
+maximum distance from the line segment created by the segment's beginning and
+end point. Using $p-1$ points makes it impossible for the maximum distance to
+be determined as the intersection of the line and curve, which would be possible
+with fewer points.
+
+% dijagram kako izgleda kad se gleda samo midpoint, vs kad se gledaju dvije
+% točke za span reda 3
 
 
-\subsection{Operations between two curves}
 
 \end{document}

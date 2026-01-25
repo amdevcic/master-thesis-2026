@@ -6,6 +6,8 @@
 
 \section{Qt Framework}
 
+Qt is a C++ framework for the development of native desktop applications.
+
 For the purpose of testing the NURBS library and its functionalities, a program
 was created using Qt and C++.
 
@@ -13,12 +15,31 @@ The actual visualization of NURBS paths was done using the QGraphicsView module.
 This module implements various drawing functions including those for drawing
 line segments and points.
 
-The \texttt{polyline} method defined in the NURBS library creates a sequence of
-line segments for the express purpose of quick and simple visualization. 
+The class \texttt{qCurve}, which inherits from \texttt{QGraphicsObject}, was
+created as a wrapper around the \texttt{Curve} class to provide Qt drawing
+functionality to a NURBS curve.
+
+Overloading the \texttt{paint} function of \texttt{QGraphicsObject} allows us to
+define how we want our object to be drawn in a \texttt{QGraphicsView} widget. In
+the case of NURBS curves, this means that it is possible to draw not just the
+curve itself, but other data associated with it, such as its control points,
+knots, or its bounding box. The \texttt{polyline} method defined in the NURBS
+library creates a sequence of points for the express purpose of quick and simple
+visualization. On every scene update each curve's polyline is recomputed and
+drawn using the \texttt{drawLine} method of the \texttt{QPainter} class.
+
+The open-source Qt widget QCustomPlot is used to visualize the basis functions
+of the selected curve\footnote{Available at \url{https://www.qcustomplot.com/}}.
+The plotting is done by taking each span's basis matrix and sampling it over an
+interval of $[0,1]$, adjusted to the knot span's actual beginning and end in the
+knot vector.
 
 \section{RViz}
 
 For testing in a simulation environment a plugin was created for the RViz tool
 often used for visualization of robots.
+
+RViz listens for ROS messages of a given type and, upon receiving data, draws
+the data appropriately. In this case, the message is a Path with timestamps.
 
 \end{document}
