@@ -1,0 +1,45 @@
+\begin{minted}[linenos]{cpp}
+class Span
+{
+public:
+  ~Span() = default;
+  Span(Eigen::Ref<Eigen::MatrixX3d> wpoints_, Eigen::Ref<Eigen::ArrayXd> knot_v, uint p);
+
+  Span(Eigen::Ref<const Eigen::MatrixXd> basis_func, Eigen::Ref<const Eigen::MatrixXd> vbf,
+       Eigen::Ref<const Eigen::RowVectorXd> wbf, double start, double end);
+
+  inline double start() const { return start_; }
+  inline double end() const { return end_; }
+  bool contains(double t) const;
+  void update(Eigen::Ref<Eigen::ArrayXd> knots, Eigen::Ref<Eigen::MatrixX3d> wpoints);
+  void updateControlPoints(Eigen::Ref<Eigen::MatrixX3d> wpoints);
+  Eigen::MatrixXd basisFunction() const;
+  PointVector polyline(double flatness = 0.5) const;
+  Point valueAt(double u) const;
+  Point derivativeAt(int n, double u) const;
+  Point derivativeAt(double u) const;
+  void resetCache();
+  double length() const;
+  double length(double t) const;
+  Eigen::RowVectorXd cachedWBF() const;
+  Eigen::MatrixXd cachedVBF() const;
+  BoundingBox boundingBox() const;
+  std::vector<double> extrema() const;
+  PointVector intersections(const Span& other) const;
+
+private:
+  mutable std::optional<double> cached_length_;
+  mutable std::optional<PointVector> cached_polyline_;
+  mutable std::optional<Eigen::VectorXd> cached_chebyshev_coeffs_;
+  mutable std::optional<BoundingBox> cached_bounding_box_;
+
+  Eigen::MatrixXd basis_function_;
+  Eigen::RowVectorXd cached_wbf_;
+  Eigen::MatrixXd cached_vbf_;
+  const uint p_;
+  double start_, end_;
+
+  static inline BoundingBox fastBoundingBox(const Eigen::MatrixXd& vbf, const Eigen::RowVectorXd& wbf,
+                                            const Eigen::MatrixXd& inverse_basis_function);
+};
+\end{minted}

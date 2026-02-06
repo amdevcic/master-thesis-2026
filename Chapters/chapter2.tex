@@ -107,12 +107,14 @@ a B-spline, a rational Bezier and so on.
 Much like B-splines, a NURBS curve of degree p and N control points has a knot
 vector of size N+p+1 and each point affects p knots.
 
-A NURBS curve of degree p always has geometric continuity of the p-th degree
-along its length. Changing the knot vector does not affect this property unless
-there are p identical knots inside the curve (not on the endpoints) which
-creates a peak. This should be avoided, or prohibited to the end-user, if the
-goal is to maintain geometric continuity. Adjusting the weights does not affect
-geometric continuity in any possible case.
+A NURBS curve of degree p always has geometric continuity of the $(p-1)$-th
+degree along its length. Changing the knot vector may affect this property if
+there are multiple identical knots inside the curve. Each duplicate knot reduces
+the geometric continuity in that point by 1. Having $p$ identical knots in the
+knot vector results in a sharp peak which only has $G^0$ continuity. All of this
+should be avoided, or prohibited to the end-user, if the goal is to maintain
+geometric continuity. Adjusting the weights does not affect geometric continuity
+in any possible case.
 
 \subsection{Comparison with Bezier curves and B-splines}
 
@@ -220,5 +222,18 @@ With the basis function, control points and weights all being known constants,
 evaluating a point on a knot span only requires computing the vector
 $\mathbf{U}^k$ and performing the necessary matrix multiplication instead of the
 iterative sum given by the original definition of NURBS.
+
+\subsection{Derivative calculation}
+
+Knowing that the matrices $\mathbf{M}$, $\mathbf{M}$ and $\mathbf{M}$ are
+independent of $\mathbf{M}$, we can calculate the derivative of Equation
+\eqref{eq:nurbs_point} as given in equation \eqref{eq:nurbs_derivative}.
+
+\begin{equation}
+    \label{eq:nurbs_derivative}
+    \frac{d^n}{dt^n} \mathbf{c}_{i-k+j}(u) = 
+    \sum_{j=0}^{n} \binom{n}{j} \frac{d^j}{dt^j} \{\mathbf{R}(u)\} \cdot 
+    \frac{d^{n-j}}{dt^{n-j}} \{1/S(u)\}
+\end{equation}
 
 \end{document}

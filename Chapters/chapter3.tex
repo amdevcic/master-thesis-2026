@@ -27,13 +27,24 @@ matrices. Using \emph{Eigen's} built-in vector and matrix classes allows for
 interoperability with other libraries and end-user programs that use
 \emph{Eigen}, which is often the case in robotics.
 
+Most of Eigen's functionality revolves around its \texttt{DenseBase} class which
+serves as a parent class to all dense matrices and vectors. Two subclasses which
+will be relevant for the implementation of NURBS are the \texttt{Matrix} and
+\texttt{Vector} classes, which are further subclassed to describe matrices and
+vectors of specific dimensions. Some examples of these subclasses are
+\texttt{Matrix2Xd}, which describes a matrix of width 2 and an arbitrary height,
+and \texttt{RowVectorXd} which describes a vector of height one and an arbitrary
+width. Specifying these types at compile-time instead of using the generic
+parent classes allows the compiler to optimize certain operations for
+constant-size matrices instead of ones with a size only known at runtime.
+
 \section{Class structure}
 
-The main data structure that is available to the user is the \texttt{Curve} class. A
-curve is divided into knot spans, or segments of the curve between two adjacent
-knots, which are represented by the \texttt{Span} utility class. A Curve object manages
-its own Span objects which are not visible outside of the class, nor is the Span
-class itself visible to the end user.
+The main data structure that is available to the user is the \texttt{Curve}
+class. A curve is divided into knot spans, or segments of the curve between two
+adjacent knots, which are represented by the \texttt{Span} utility class. A
+Curve object manages its own Span objects which are not visible outside of the
+class, nor is the Span class itself visible to the end user.
 
 \subsection{Curve}
 
@@ -55,10 +66,11 @@ the multiple knot, and never the zero-length span containing the knot $t$.
 
 The \texttt{Span} class defines a segment of a curve between two knots. It
 shares its order with its parent curve and the number of control points is
-limited by its order. A single span does not have a knot vector. The shape of
-a span is defined by its basis function, which is in turn defined by the parent
-curve's knot vector. This basis function is defined in the code as a 4 by 4
-matrix and is stored in each span.
+limited by its order. A single span does not have a knot vector. The shape of a
+span is defined by its basis function, which is in turn defined by the parent
+curve's knot vector. This basis function is defined in the code as a $(p+1)$ by
+$(p+1)$ matrix, where $p$ represents the span's order, and is stored in each
+span.
 
 For the sake of performance and memory efficiency, the \texttt{Span} class does
 not store its control points, but instead caches the dot product of the weights
@@ -66,9 +78,10 @@ with the basis function, as well as the weighted control points with the basis
 function, as required by Equation \eqref{eq:nurbs_point} for the evaluation of a
 point on the curve.
 
-Whenever the curve's knot vector is modified, the affected spans recompute their
-basis functions as defined in Equation \eqref{eq:basisfunc}. Afterwards they
-recompute their cached control point and weight matrices.
+Whenever the curve's knot vector is modified, the affected spans use the
+\texttt{update} method to recompute their basis functions as defined in Equation
+\eqref{eq:basisfunc}. Afterwards they recompute their cached control point and
+weight matrices using the \texttt{updateControlPoints} method.
 
 \section{Key method implementations}
 
@@ -89,22 +102,25 @@ segment and the given order. The basis function is computed according to
 Equation \eqref{eq:basisfunc} and stored in the span. Using the basis function
 and the weighted control point segment the span computes the product of the
 basis function with the control point matrix, and the basis function with the
-weight vector, named \texttt{cached\_vbf\_} and \texttt{cached\_wbf\_} respectively.
-With these data members calculated the span is returned and stored in the curve
-object.
+weight vector, named \texttt{cached\_vbf\_} and \texttt{cached\_wbf\_}
+respectively. With these data members calculated the span is returned and stored
+in the curve object.
 
 \subsection{Curve and span methods}
 
 The \texttt{valueAt} method directly implements equation \eqref{eq:nurbs_point}
-using matrix notation. The helper function \texttt{\_powSeries(t, p)} computes the
-powers of $t$ up to $p$.
+using matrix notation. The helper function \texttt{\_powSeries(t, p)} computes
+the powers of $t$ up to $p$.
 
-The \texttt{length} method calculates the total length of a curve. 
+The \texttt{length} method approximates the total length of a curve. Exact
+calculation of the length of any parametric curve of the third degree or higher
+is proven to be impossible. \citenone  The method instead uses Chebyshev
+polynomials to approximate the length of the span with a negligible error.
 
 \subsection{Piecewise linear representation}
 
-The \texttt{polyline} method creates a sequence of points suitable for
-drawing or other purposes when only an approximation of the curve is needed. One
+The \texttt{polyline} method creates a sequence of points suitable for drawing
+or other purposes when only an approximation of the curve is needed. One
 possible way, and the simplest way to implement this would be to iterate over a
 fixed number of uniformly spaced $t$ values, however this can cause problems as
 it does not take into account the scale of the curve and its curvature; a curve
@@ -118,13 +134,59 @@ curve.
 
 For each segment of the curve, the method checks $p-1$ points and finds the
 maximum distance from the line segment created by the segment's beginning and
-end point. Using $p-1$ points makes it impossible for the maximum distance to
-be determined as the intersection of the line and curve, which would be possible
+end point. Using $p-1$ points makes it impossible for the maximum distance to be
+determined as the intersection of the line and curve, which would be possible
 with fewer points.
 
 % dijagram kako izgleda kad se gleda samo midpoint, vs kad se gledaju dvije
 % točke za span reda 3
 
+\subsection{Derivative evaluation}
 
+The \texttt{derivativeAt} method computes the $n$-th derivative of the curve on
+a given point $t$. The order of the derivative is not limited, however higher
+values for n can result in slow performance. The helper method
+\texttt{\_powSeriesDerivative} calculates the derivative of the power series of
+$t$, which amounts to differentiating each of the elements individually.
+
+\begin{equation*}
+    \begin{aligned}
+        \mathbf{U}_k(t) &= \begin{bmatrix}
+            1, t, t^2, t^3, \dots, t^k
+        \end{bmatrix} \\
+        \frac{d}{dt} \mathbf{U}_k(t) &= \begin{bmatrix}
+            0, 1, 2t, 3t^2, \dots, kt^{k-1}
+        \end{bmatrix} \\
+        \frac{d^2}{dt^2} \mathbf{U}_k(t) &= \begin{bmatrix}
+            0, 0, 2, 6t, \dots, k(k-1)t^{k-2}
+        \end{bmatrix} \\
+        \dots
+    \end{aligned}
+\end{equation*}
+
+The \texttt{extrema} method calculates the positions of all extrema of the curve
+on the $x$ and $y$ axis. One use case of this is calculating the bounding box of
+the curve or span, as done in the \texttt{boundingBox} method in the
+\texttt{Span} class. The \texttt{boundingBox} method in the \texttt{Curve}
+class, on the other hand, gets the bounding boxes of all its spans and finds
+their minimum and maximum.
+
+\subsection{Curve and span splitting}
+
+the \texttt{\_splittingCoeffs} helper function creates a pair of matrices which,
+when multiplied with a span's basis function, splits the span into two new spans
+at a given point $t$. \citenone
+
+This function is used in methods such as \texttt{polyline} and
+\texttt{intersections}, but also in the \texttt{Curve} class for literal curve
+splitting.
+
+\subsection{Intersections between curves}
+Finding all intersections between two spans is known to be impossible. \citenone
+Instead, an iterative method is used to approximate the intersections with an
+error of \texttt{epsilon}.
+
+The \texttt{intersections} method uses a similar algorithm to the
+\texttt{polyline} method to determine if a span is approximately a straight line.
 
 \end{document}

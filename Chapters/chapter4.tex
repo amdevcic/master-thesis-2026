@@ -40,6 +40,20 @@ For testing in a simulation environment a plugin was created for the RViz tool
 often used for visualization of robots.
 
 RViz listens for ROS messages of a given type and, upon receiving data, draws
-the data appropriately. In this case, the message is a Path with timestamps.
+the data appropriately. In this case, the message is a Path with timestamps,
+named \texttt{PathStamped}. It supports custom plugins written in C++ that add
+support for drawing custom message types.
+
+RViz itself is created in Qt which means it reuses some of Qt's concepts when it
+comes to plugin development. One important feature is the ability to add custom
+editable properties in the GUI. When making a plugin, each property provides a
+\emph{signal} that is emitted when the property is edited, which can be
+connected to \emph{slots} that execute when the signal emits.
+
+While it uses Qt for its user interface, RViz also uses the \emph{Ogre}
+(Object-Oriented Graphics Rendering Engine) library to render its 3D scenes and
+manage objects in a scene.
+
+Two line drawing methods are implemented: BillboardLine and ManualObject.
 
 \end{document}

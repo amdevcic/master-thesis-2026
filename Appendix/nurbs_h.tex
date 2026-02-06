@@ -1,0 +1,76 @@
+\begin{minted}[linenos]{cpp}
+class Curve
+{
+    public:
+    ~Curve() = default;
+    Curve(Eigen::MatrixX2d points, int p = 3);
+    Curve(const PointVector& points, int p = 3);
+    Curve(Eigen::MatrixX3d wpoints, Eigen::ArrayXd knotvector, int p = 3);
+    Curve(const Curve& curve);
+    Curve(Curve&&) = default;
+    Curve& operator=(const Curve&);
+    Curve& operator=(Curve&&) = default;
+    unsigned order() const;
+    void elevateOrder(uint t = 1);
+    void lowerOrder();
+    PointVector controlPoints() const;
+    Point controlPoint(unsigned idx) const;
+    void setControlPoint(unsigned idx, const Point& point);
+    std::pair<Point, Point> endPoints() const;
+    void reverse();
+    PointVector polyline(double flatness = 0.5) const;
+    Point valueAt(double t) const;
+    Eigen::MatrixX2d valueAt(const std::vector<double>& t_vector) const;
+    BoundingBox boundingBox(bool use_roots = true) const;
+    const Curve& derivative() const;
+    const Curve& derivative(unsigned n) const;
+    Vector derivativeAt(double t) const;
+    Vector derivativeAt(unsigned n, double t) const;
+    std::vector<double> roots() const;
+    std::vector<double> extrema() const;
+    double curvatureAt(double t) const;
+    double curvatureDerivativeAt(double t) const;
+    Vector tangentAt(double t, bool normalize = true) const;
+    Vector normalAt(double t, bool normalize = true) const;
+    double projectPoint(const Point& point) const;
+    PointVector intersections(const Curve& other) const;
+    double weight(int idx) const;
+    void setWeight(int idx, double value);
+    Eigen::VectorXd weights() const;
+    Eigen::ArrayXd knotVector() const;
+    void setKnot(int idx, double value);
+    double knot(int idx) const;
+    void appendPoint(Point point);
+    void insertKnot(double t, int r);
+    std::pair<Curve, Curve> splitCurve(double t) const;
+    std::vector<Curve> piecewiseBezier() const;
+    Eigen::VectorXd getBasisFunctionsAt(double t) const;
+    int getKnotSpanIndex(double t) const;
+    double length() const;
+    double length(double t) const;
+    void removeKnot(int ix, int k = 1);
+    void removeControlPoint(int ix);
+    Curve join(Curve& other);
+    void applyContinuity(const Curve& source_curve, const std::vector<double>& beta_coeffs);
+
+    protected:
+    Eigen::MatrixX3d weighted_control_points_;
+    inline void resetCache();
+
+    private:
+    unsigned N_{};
+    unsigned p_{};
+
+    mutable std::optional<std::vector<double>> cached_roots_;
+    mutable std::optional<BoundingBox> cached_bounding_box_;
+    mutable std::optional<PointVector> cached_polyline_;
+    mutable double cached_polyline_flatness_{};
+
+    Eigen::ArrayXd T_;
+    mutable std::vector<Span> spans_;
+
+    Span& getKnotSpan(double t) const;
+    int getKnotMultiplicity(double t) const;
+    void normalizeKnotVector();
+};
+\end{minted}

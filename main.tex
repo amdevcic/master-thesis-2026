@@ -4,7 +4,9 @@
 
 \usepackage{blindtext}
 \usepackage{subfiles}
+\usepackage{minted}
 
+\newcommand{\citenone}{[?] \PackageWarning{TODO}{Placeholder reference}}
 
 %--- THESIS INFORMATION / PODACI O RADU ----------------------------------------
 
@@ -125,9 +127,10 @@
 % All following chapters will be denoted with an appendix and a letter / Sva poglavlja koja slijede će biti označena slovom i riječi privitak
 \backmatter
 
-\chapter{The Code}
+\chapter{NURBS.h (shortened)}
+\subfile{Appendix/nurbs_h.tex}
 
-\Blindtext
-
+\chapter{Span.h}
+\subfile{Appendix/span_h.tex}
 
 \end{document}
