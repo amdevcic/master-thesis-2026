@@ -16,53 +16,122 @@ polynomials and are most often used to interpolate between a set of points.
 
 For the purpose of AGV path design, the most appropriate types of splines are
 Bezier curves, B-splines, and NURBS curves. What these three models have in
-common is that each curve is defined by its order, a set of control points in
+common is that each curve is defined by its degree, a set of control points in
 n-dimensional space and its basis functions. The position for a given t is a
 weighted sum of the curve's points, the weights being given by its basis
 functions. In other words, the curve interpolates between all of its given
 points.
 
-A curve appropriate for AGV path design needs to have three attributes: it must
-have geometric continuity of at least the third order, it must be easy to
-manipulate to maximize the usage of available space, and it must be able to be
-shaped in such a way to minimize the derivative of the curvature.
+In literature, the terms \emph{degree} and \emph{order} are both used to
+describe polynomial curves and splines. While these terms are very closely
+linked they are not interchangeable. The term \emph{degree} is most commonly
+used in mathematical literature because it describes the actual degree of the
+curve's polynomial. The term \emph{order}, on the other hand, is used in CAGD
+literature and describes the order of continuity along the curve, which is more
+relevant than the degree of the polynomial in engineering. The degree is always
+equal to the order minus one. The term \emph{degree} will be used going forward
+for consistency.
 
 \section{Bezier}
 
 Bezier curves are the simplest of the three. The most commonly used types of
 Bezier curves are quadratic and cubic curves, defined by three and four points
-respectively. The order of a Bezier curve is always equal to the number of
+respectively. The degree of a Bezier curve is always equal to the number of
 control points minus one.
 
 \begin{equation}
     C(u) = \sum_{i=0}^{n}B_{i,n}(u)P_i
 \end{equation}
 
-A Bezier curve's basis functions are known as Bernstein polynomials. There are
-$n$ basis functions for a curve of the n-th degree. \cite{primer} Bernstein
-polynomials are defined only by the curve's degree, meaning that all Bezier
-curves of the same degree have the same Bernstein polynomials.
+A Bezier curve's basis functions, or blending functions, are known as Bernstein
+polynomials. There are $n+1$ basis functions for a curve of the n-th degree.
+\cite{primer} In other words, there are as many polynomials as there are control
+points. Bernstein polynomials are defined only by the curve's degree, meaning
+that all Bezier curves of the same degree have the exact same Bernstein
+polynomials.
 
 \begin{equation}
     B_{i,n}(u) = \frac{n!}{i!(n-i)!} u^i (1-u)^{n-i}
 \end{equation}
 
+\begin{figure}[h]
+    \centering
+    \begin{tikzpicture}
+        \begin{groupplot}[
+            group style={
+                group size=3 by 1,
+                horizontal sep=0.8cm,  % No gap between plots
+                },
+            width=0.36\textwidth,
+            height=5cm,
+            axis y line=left,  % Only left side has y-axis
+            axis x line=bottom,
+            xlabel = \(t\),
+            ymin=0, ymax=1,
+        ]
+        
+        \nextgroupplot[ylabel={\(B(t)\)}]
+        \addplot [domain=0:1,samples=100] {1-x};
+        \addplot [domain=0:1,samples=100] {x};
+        
+        \nextgroupplot
+        \addplot [domain=0:1,samples=100] {(1-x)^2};
+        \addplot [domain=0:1,samples=100] {2*x*(1-x)};
+        \addplot [domain=0:1,samples=100] {x^2};
+        
+        \nextgroupplot
+        \addplot [domain=0:1,samples=100] {(1-x)^3};
+        \addplot [domain=0:1,samples=100] {3*x*(1-x)^2};
+        \addplot [domain=0:1,samples=100] {3*x^2*(1-x)};
+        \addplot [domain=0:1,samples=100] {x^3};
+        
+        \end{groupplot}
+    \end{tikzpicture}
+    \caption{Basis functions for a Bezier curve of degree 1, 2 and 3}
+    \label{fig:bezier_bernstein}
+\end{figure}
+
+Figure \ref{fig:bezier_bernstein} shows three examples of Bernstein polynomials,
+for a Bezier curve of degrees 1, 2 and 3 respectively. This shows how a given
+curve has as many Bernstein polynomials as there are control points, and each
+polynomial represents the influence that a control point has on the curve at a
+given parameter $t$. A Bernstein polynomial must be non-zero across the whole
+parameter range of $\langle 0,1\rangle$, meaning that all control points have
+influence over the entire curve. This makes Bezier curves unsuitable for
+defining long, continuous paths as they do not have \emph{local control}.
+
 \section{B-spline}
 
 B-splines, short for “basis splines,” are a generalization of Bezier curves.
-Unlike Bezier curves, which have static basis functions dependent on order, the
+Unlike Bezier curves, which have static basis functions dependent on degree, the
 basis functions of a B-spline can be modified using what is called a knot
 vector. The number of control points on a B-spline is arbitrary and not
 dependent on its order, unlike Beziers.
+
+We call B-splines \emph{piecewise polynomial} splines because they are composed
+of a series of polynomial segments. This is different from Bezier curves which
+are, by definition, a single polynomial.
 
 \begin{equation}
     C(u) = \sum_{i=0}^{n}B_{i,n}(u)P_i
 \end{equation}
 
-The basis functions of a B-spline may be equal to zero in the range $(0, 1)$,
-meaning that a given basis function may not have influence on the entire curve,
-i.e. a given point on the curve may not be defined by all of its control points.
-This makes it possible to create complex shapes using a single B-spline.
+The basis functions of a B-spline are not necessarily non-zero in the entire
+range $(0, 1)$, meaning that a given basis function may not have influence on
+the entire curve, i.e. a given point on the curve may not be defined by all of
+its control points. This makes it possible to create complex shapes using a
+single B-spline.
+
+\begin{equation}
+\begin{aligned}
+    B_{i,p}(t) &= \frac{t - t_i}{t_{i+p} - t_i} B_{i,p-1}(t) + 
+    \frac{t_{i+p+1} - t}{t_{i+p+1} - t_{i+1}} B_{i+1,p-1}(t) \\
+    B_{i,0}(t) &= \begin{cases}
+  1 & t_i \leq t < t_{i+1}\\
+  0 & \text{otherwise}
+\end{cases}
+\end{aligned}
+\end{equation}
 
 A B-spline of degree $p$ and with $N$ control points has a knot vector of size
 $N+p+1$. Each control point affects $p$ knots. By moving a knot's value up or
@@ -72,6 +141,80 @@ $t$, can be seen as a separate curve controlled by $p+1$ points, much like a
 Bezier. However, this is a much better solution than chaining Bezier curves
 because the model guarantees geometric continuity between knot spans, while a
 chain of Beziers needs to be adjusted manually to be continuous.
+
+\begin{figure}[h]
+    \centering
+    \begin{tikzpicture}
+        \begin{axis}[
+            width=15cm,
+            height=8cm,
+            xlabel={$t$},
+            ylabel={Basis Function Value},
+            xmin=0.0, xmax=1.0,
+            ymin=-0.0, ymax=1.0,
+            grid=both,
+            grid style={line width=.1pt, draw=gray!10},
+            major grid style={line width=.2pt,draw=gray!50},
+            legend pos=north east,
+            legend cell align=left,
+            samples=100,
+            smooth,
+            line width=1.5pt,
+        ]
+
+        % Basis function N_{0,2}(t)
+        \addplot[red, domain=0.0:0.25] {1 - 8*x + 16*x^2};
+        \addlegendentry{$N_{0,2}$}
+
+        % Basis function N_{1,2}(t)
+        \addplot[blue, domain=0.0:0.25] {8*x - 24*x^2};
+        \addplot[blue, domain=0.25:0.5] {2 - 8*x + 8*x^2};
+        \addlegendentry{$N_{1,2}$}
+
+        % Basis function N_{2,2}(t)
+        \addplot[green!70!black, domain=0.0:0.25] {8*x^2};
+        \addplot[green!70!black, domain=0.25:0.5] {-1.5 + 12*x - 16*x^2};
+        \addplot[green!70!black, domain=0.5:0.75] {4.5 - 12*x + 8*x^2};
+        \addlegendentry{$N_{2,2}$}
+
+        % Basis function N_{3,2}(t)
+        \addplot[orange, domain=0.25:0.5] {0.5 - 4*x + 8*x^2};
+        \addplot[orange, domain=0.5:0.75] {-5.5 + 20*x - 16*x^2};
+        \addplot[orange, domain=0.75:1.0] {8 - 16*x + 8*x^2};
+        \addlegendentry{$N_{3,2}$}
+
+        % Basis function N_{4,2}(t)
+        \addplot[purple, domain=0.5:0.75] {2 - 8*x + 8*x^2};
+        \addplot[purple, domain=0.75:1.0] {-16 + 40*x - 24*x^2};
+        \addlegendentry{$N_{4,2}$}
+
+        % Basis function N_{5,2}(t)
+        \addplot[cyan!70!black, domain=0.75:1.0] {9 - 24*x + 16*x^2};
+        \addlegendentry{$N_{5,2}$}
+
+        % Knot positions
+        \addplot[gray, dashed, forget plot] coordinates {(0.0,-0.05) (0.0,1.1)};
+        \addplot[gray, dashed, forget plot] coordinates {(0.25,-0.05) (0.25,1.1)};
+        \addplot[gray, dashed, forget plot] coordinates {(0.5,-0.05) (0.5,1.1)};
+        \addplot[gray, dashed, forget plot] coordinates {(0.75,-0.05) (0.75,1.1)};
+        \addplot[gray, dashed, forget plot] coordinates {(1.0,-0.05) (1.0,1.1)};
+
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Example basis functions for a quadratic B-spline}
+    \label{fig:bspline_basisfunc}
+\end{figure}
+
+Figure \ref{fig:bspline_basisfunc} shows the basis functions of a B-spline with
+a degree of 2 and six control points. The dashed vertical lines mark the edges
+between individual knot spans. One thing that can be noticed in the graph is
+that each knot span has exactly three "active" or non-zero basis functions at a
+time. Much like a Bezier curve, each knot span of degree $p$ is controlled by
+$p+1$ points, but B-splines differ from a chain of Bezier curves in the fact
+that the basis functions are continuous from one span to another. A chain of
+Bezier curves can only have the desired degree of geometric continuity if its
+control points are placed in a specific manner, whereas a B-spline will be
+continuous across its spans by definition.
 
 This is very close to what we want but it's still difficult to make sharp turns
 and precise movements without increasing the order of the curve, making it more
@@ -105,7 +248,25 @@ By limiting the parameters of a NURBS curve we can effectively create a Bezier,
 a B-spline, a rational Bezier and so on.
 
 Much like B-splines, a NURBS curve of degree p and N control points has a knot
-vector of size N+p+1 and each point affects p knots.
+vector of size N+p+1 and each point affects p knots. Each basis function belongs
+to one control point. Scaling a particular point's weight also scales its basis
+function in comparison to its neighboring functions, however it can still only
+reach the $p-1$ knot spans before and after it, maintaining local control.
+
+\begin{figure}[h]
+    \centering
+    \begin{tikzpicture}
+        
+        \begin{axis}[width=12cm, height=8cm]
+            \addplot [domain=0:1,samples=100] {(1-x)^3};
+            \addplot [domain=0:1,samples=100] {3*x*(1-x)^2};
+            \addplot [domain=0:1,samples=100] {3*x^2*(1-x)};
+            \addplot [domain=0:1,samples=100] {x^3};
+        \end{axis}
+
+    \end{tikzpicture}
+    \caption{Example basis functions for a NURBS of degree 3}
+\end{figure}
 
 A NURBS curve of degree p always has geometric continuity of the $(p-1)$-th
 degree along its length. Changing the knot vector may affect this property if
@@ -225,8 +386,8 @@ iterative sum given by the original definition of NURBS.
 
 \subsection{Derivative calculation}
 
-Knowing that the matrices $\mathbf{M}$, $\mathbf{M}$ and $\mathbf{M}$ are
-independent of $\mathbf{M}$, we can calculate the derivative of Equation
+Knowing that the matrices $\mathbf{M}$, $\mathbf{P}$ and $\mathbf{W}$ are
+independent of $\mathbf{U}$, we can calculate the derivative of Equation
 \eqref{eq:nurbs_point} as given in equation \eqref{eq:nurbs_derivative}.
 
 \begin{equation}
@@ -235,5 +396,11 @@ independent of $\mathbf{M}$, we can calculate the derivative of Equation
     \sum_{j=0}^{n} \binom{n}{j} \frac{d^j}{dt^j} \{\mathbf{R}(u)\} \cdot 
     \frac{d^{n-j}}{dt^{n-j}} \{1/S(u)\}
 \end{equation}
+
+\subsection{Curve splitting}
+
+Splitting a NURBS curve at a given parameter $t$ boils down to splitting
+whichever one of its knot spans contains the point $t$. Using matrix notation,
+splitting a knot span into two separate spans is straightforward.
 
 \end{document}

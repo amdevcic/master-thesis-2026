@@ -1,7 +1,7 @@
 \documentclass[../main.tex]{subfiles}
 \begin{document}
 
-\chapter{Robot vehicle path design}
+\chapter{Mobile robot path design}
 \label{chp:robotpathdesign}
 
 Automated guided vehicles, or AGV-s for short, are mobile robots often used in
@@ -25,11 +25,11 @@ computer vision to verify their position in space and their speed.
 
 \section{Path continuity}
 
-Two mathematical concepts relevant to AGV navigation are geometric continuity
-and parametric continuity. Parametric continuity of the n-th degree, or $C^n$,
-is achieved when the parameters of the n-th derivative of a function are
-continuous. Geometric continuity of the n-th degree, or $G^n$, is a more relaxed
-form of parametric continuity, and is achieved if a function can be
+Two mathematical concepts relevant to mobile robot navigation are geometric
+continuity and parametric continuity. Parametric continuity of the n-th degree,
+or $C^n$, is achieved when the parameters of the n-th derivative of a function
+are continuous. Geometric continuity of the n-th degree, or $G^n$, is a more
+relaxed form of parametric continuity, and is achieved if a function can be
 reparametrized as a $C^n$ continuous function. \cite{geometric_cont}
 
 A $G^0$ continuous spline is one where all of the points on the curve are
@@ -37,10 +37,16 @@ continuous, whereas a $G^1$ continuous spline has a continuous tangent direction
 as well as position. A spline with $G^2$ continuity may be appropriate for most
 uses. It has continuity in position, speed and acceleration.
 
-For the navigation of multi-wheeled AGV-s it is important to take into account
-the \emph{jerk}, or the rate of change of acceleration. A curve where the
-acceleration changes continuously would be considered to have $G^3$ continuity.
+For the navigation of multi-wheeled mobile robots it is important to take into
+account the \emph{jerk}, or the rate of change of acceleration. A curve where
+the acceleration changes continuously would be considered to have $G^3$
+continuity.
 \cite{kokot2021arxiv}
+
+A curve appropriate for mobile robot path design needs to have three attributes:
+it must have geometric continuity of at least the third order, it must be easy
+to manipulate to maximize the usage of available space, and it must be able to
+be shaped in such a way to minimize the derivative of the curvature.
 
 \section{Robot Operating System}
 The \emph{Robot Operating System}, or ROS for short, provides a standardized

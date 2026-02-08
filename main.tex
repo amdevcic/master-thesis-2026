@@ -4,7 +4,29 @@
 
 \usepackage{blindtext}
 \usepackage{subfiles}
-\usepackage{minted}
+\usepackage[outputdir=Build]{minted}
+\setminted{
+    breaklines=true,
+    breakanywhere=false,  % Only break at spaces (default)
+}
+
+\usepackage{pgfplots}
+\usepgfplotslibrary{groupplots}
+
+\pgfplotsset{
+    % Global settings for ALL plots
+    compat=1.18,
+    every axis/.style={
+        axis lines = left,
+        tick label style={font=\scriptsize},
+        label style={font=\footnotesize},
+        legend style={font=\footnotesize},
+    },
+    % Global settings for groupplots specifically
+    every axis plot/.style={
+        samples=100
+    }
+}
 
 \newcommand{\citenone}{[?] \PackageWarning{TODO}{Placeholder reference}}
 
@@ -127,7 +149,7 @@
 % All following chapters will be denoted with an appendix and a letter / Sva poglavlja koja slijede će biti označena slovom i riječi privitak
 \backmatter
 
-\chapter{NURBS.h (shortened)}
+\chapter{NURBS.h}
 \subfile{Appendix/nurbs_h.tex}
 
 \chapter{Span.h}
