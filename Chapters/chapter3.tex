@@ -11,9 +11,10 @@ utilizes the Eigen library for its linear algebra functions.
 The library implements all necessary functions for creating and using NURBS
 curves. Elementary transformations, such as translation and rotation, are not
 implemented. It is important to note one of the properties of NURBS curves which
-is that all transformations applied to the set of control points are equivalent
-to transformations on the curve itself, meaning that the end-user may implement
-these functions themselves if necessary. The library only provides the minimum
+is that all affine transformations applied to the set of control points, as well
+as perspective projections, are equivalent to transformations on the curve
+itself, meaning that the end-user may implement these functions themselves if
+necessary \cite{Piegl_Tiller_1997}. The library only provides the minimum
 required functions to cover all operations exclusive to NURBS curves.
 
 \section{The Eigen library}
@@ -43,8 +44,9 @@ constant-size matrices instead of ones with a size only known at runtime.
 The main data structure that is available to the user is the \texttt{Curve}
 class. A curve is divided into knot spans, or segments of the curve between two
 adjacent knots, which are represented by the \texttt{Span} utility class. A
-Curve object manages its own Span objects which are not visible outside of the
-class, nor is the Span class itself visible to the end user.
+\texttt{Curve} object manages its own \texttt{Span} objects which are not
+visible outside of the class, nor is the Span class itself visible to the end
+user.
 
 \subsection{Curve}
 
@@ -54,7 +56,7 @@ including its control points, knot vector, and order. Internally it is
 represented by an array of \emph{Span} objects containing the data required to
 evaluate many NURBS operations, though they are not accessible to the end-user.
 
-Methods that operate on a single span rather than the entire curve involve
+Methods that operate on a single span, rather than the entire curve, involve
 evaluating which spans are being affected, then propagating the function call to
 the \emph{Span} objects themselves. The \texttt{getKnotSpanIndex(t)} method
 returns the index of the knot span containing the value $t$. The result is
@@ -108,14 +110,26 @@ in the curve object.
 
 \subsection{Curve and span methods}
 
-The \texttt{valueAt} method directly implements equation \eqref{eq:nurbs_point}
+The \texttt{valueAt} method directly implements Equation \eqref{eq:nurbs_point}
 using matrix notation. The helper function \texttt{\_powSeries(t, p)} computes
-the powers of $t$ up to $p$.
+the powers of $t$ up to $p$ in accordance with Equation \eqref{eq:t_powseries}.
+
+\begin{minted}{cpp}
+    Point Span::valueAt(double u) const
+    {
+    Eigen::RowVectorXd pw = _powSeries(u, p_);
+    return (pw * cached_vbf_) / pw.dot(cached_wbf_);
+    }
+\end{minted}
 
 The \texttt{length} method approximates the total length of a curve. Exact
-calculation of the length of any parametric curve of the third degree or higher
-is proven to be impossible. \citenone  The method instead uses Chebyshev
-polynomials to approximate the length of the span with a negligible error.
+calculation of the length of any polynomial parametric curve of the third degree
+or higher is proven to be impossible. \citenone  The method instead uses
+Chebyshev polynomials to approximate the length of the span with a negligible
+error \texttt{epsilon}.
+
+The \texttt{boundingBox} method creates an axis-aligned bounding box (AABB)
+around the curve.
 
 \subsection{Piecewise linear representation}
 
@@ -129,7 +143,7 @@ a curve that is equal to a straight line could have the same number of points as
 one with many sharp twists.
 
 The \texttt{polyline} method takes a \texttt{flatness} argument which defines
-the tolerance for the distance between the linear approximation and the actual
+the tolerance for the error between the linear approximation and the actual
 curve.
 
 For each segment of the curve, the method checks $p-1$ points and finds the
@@ -164,6 +178,10 @@ $t$, which amounts to differentiating each of the elements individually.
     \end{aligned}
 \end{equation*}
 
+The method then iteratively calculates the derivatives from the first to the
+$n$-th according to Equation \eqref{eq:nurbs_derivative}, using the previous
+derivative in each consecutive calculation.
+
 The \texttt{extrema} method calculates the positions of all extrema of the curve
 on the $x$ and $y$ axis. One use case of this is calculating the bounding box of
 the curve or span, as done in the \texttt{boundingBox} method in the
@@ -187,6 +205,17 @@ Instead, an iterative method is used to approximate the intersections with an
 error of \texttt{epsilon}.
 
 The \texttt{intersections} method uses a similar algorithm to the
-\texttt{polyline} method to determine if a span is approximately a straight line.
+\texttt{polyline} method to determine if a span is approximately a straight
+line. Instead of a queue of subcurves, it keeps a queue of \emph{pairs} of
+subcurves to be checked against each other. The queue is populated with both
+whole spans in the beginning. For each pair in the queue, it first checks their
+bounding boxes to see if they possibly don't overlap at all. If they do, the
+method then checks if the diagonals of the bounding boxes are of
+\texttt{epsilon} length, or if the subcurves are an approximately straight line.
+If not, both subcurves are split at $t=0.5$ using previously cached splitting
+matrices, and all combinations of the four curves are added into the queue. As
+the subcurves are split, they eventually reach the exit condition, in which case
+their intersection is calculated as the intersection of straight line
+approximations of the two subdivided parts.
 
 \end{document}

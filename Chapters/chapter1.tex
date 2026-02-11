@@ -4,33 +4,44 @@
 \chapter{Mobile robot path design}
 \label{chp:robotpathdesign}
 
-Automated guided vehicles, or AGV-s for short, are mobile robots often used in
-logistics and other industries. They differ from autonomous mobile robots, or
-AMR-s, in the fact that AGV-s operate on predefined paths while AMR-s operate
-with no guidance. AMR-s do not have predefined paths, they use artificial
-intelligence and sensors and communicate with other robots in the network to
-plan out their own optimal paths. AGV-s often have a controller system which
-commands and controls all robots in the network. In some cases AMR-s might be
-the solution that requires less human intervention and input and may be more
-efficient, however AGV-s allow for more control and predictability.
+Traditionally, mobile robots, especially ones used for material handling in
+logistics and manufacturing, have been classified into two categories, automated
+guided vehicles (AGVs) and autonomous mobile robots (AMRs). AGVs operate on
+predefined paths while AMRs plan their path for every new mission. AGV-s often
+have a controller system which commands and controls all robots in the network.
+In some cases AMR-s might be the solution that requires less human intervention
+and input and may be more efficient, however AGV-s allow for more control and
+predictability. The line separating these two approaches is becoming
+increasingly blurred as some AGVs can now re-plan their paths around obstacles.
+This thesis is focused on pre-planned paths and will refer to the vehicles
+simply as mobile robots.
 
-In the past, AGV-s used physical rails or magnetized or induction tracks placed
-in the environment to guide their movement. Modern AGV-s have their paths
+In the past, AGV-s used physical rails, or magnetized or induction tracks,
+placed in the environment to guide their movement. Modern AGV-s have their paths
 defined in a controller application which sends commands to dictate their
-movement. While driving, the robots use various sensors to verify their speed
-and position and correct their path if necessary. Some AGV-s require reflective
-stickers for navigation, though in other cases no changes need to be made to the
-environment. In that case the AGV uses a combination of LIDAR sensors and
-computer vision to verify their position in space and their speed.
+movement. While driving, the robots use various sensors to verify their
+velocity, position and orientation  and correct their path if necessary. Some
+AGV-s require reflective stickers for navigation, though in other cases no
+changes need to be made to the environment. In that case the AGV uses a
+combination of LIDAR sensors and computer vision to verify their position in
+space and their speed.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.7\linewidth]{roadmap_cropped.jpg}
+    \label{fig:roadmap}
+    \caption{Example of a roadmap.}
+\end{figure}
 
 \section{Path continuity}
 
 Two mathematical concepts relevant to mobile robot navigation are geometric
-continuity and parametric continuity. Parametric continuity of the n-th degree,
-or $C^n$, is achieved when the parameters of the n-th derivative of a function
-are continuous. Geometric continuity of the n-th degree, or $G^n$, is a more
-relaxed form of parametric continuity, and is achieved if a function can be
-reparametrized as a $C^n$ continuous function. \cite{geometric_cont}
+continuity and parametric continuity of the robot's path. Parametric continuity
+of the n-th degree, or $C^n$, is achieved when the parameters of the n-th
+derivative of a function are continuous. Geometric continuity of the n-th
+degree, or $G^n$, is a more relaxed form of parametric continuity, and is
+achieved if a function can be reparametrized as a $C^n$ continuous function.
+\cite{geometric_cont}
 
 A $G^0$ continuous spline is one where all of the points on the curve are
 continuous, whereas a $G^1$ continuous spline has a continuous tangent direction
@@ -48,20 +59,14 @@ it must have geometric continuity of at least the third order, it must be easy
 to manipulate to maximize the usage of available space, and it must be able to
 be shaped in such a way to minimize the derivative of the curvature.
 
-\section{Robot Operating System}
-The \emph{Robot Operating System}, or ROS for short, provides a standardized
-interface between user programs and robot architecture, and is commonly used in
-the field of robotics. 
+The curvature derivative is important because it indicates how much and how
+sharply the mobile robot must turn its steering wheels. A high curvature
+derivative means that the robot needs to rotate its steering wheel a greater
+angle in a shorter amount of time, which may put strain on the robot and be
+dangerous for the people around it, especially if carrying heavy or unstable
+cargo. In addition, robots have a physical limit as to how quickly they can turn
+based on their size and architecture.
 
-ROS is mainly built upon the concept of \emph{publishers} and \emph{subscribers}
-sending and receiving data among each other. A publisher sends \emph{messages},
-which can contain various different types of data, to a \emph{topic}. These will
-often contain user commands, sensor data or other real-time information that a
-robot might use. A subscriber subscribes to a topic and receives all messages
-sent to that topic. Subscribers may receive commands for a robot, but also
-collect data from a robot's sensors to show to the user.
-
-\section{Visualization of AGV paths}
 
 
 \end{document}

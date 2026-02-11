@@ -4,6 +4,9 @@
 
 \usepackage{blindtext}
 \usepackage{subfiles}
+
+\graphicspath{ {./Images/} }
+
 \usepackage[outputdir=Build]{minted}
 \setminted{
     breaklines=true,
@@ -12,6 +15,8 @@
 
 \usepackage{pgfplots}
 \usepgfplotslibrary{groupplots}
+\usepgfplotslibrary{external}
+\tikzexternalize
 
 \pgfplotsset{
     % Global settings for ALL plots

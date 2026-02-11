@@ -4,9 +4,10 @@
 \chapter{Applications and improvements}
 \label{chp:improvements}
 
-The library was created for the purpose of top-down path mapping, and as such
-works only in 2D space. As it stands it can be used for any 2D application,
-including controlling robot manipulators, e.g. in plotting or CNC machines.
+The library was created for the purpose of designing top-down paths for vehicles
+which move indoors, on flat floors, and as such works only in 2D space. As it
+stands it can be used for any 2D application, including controlling robot
+manipulators, e.g. in plotting or CNC machines.
 
 One possible improvement to the library would be the ability to define NURBS
 curves in any dimension, including 1D and from 3D onward. This could be achieved
@@ -23,10 +24,10 @@ One-dimensional splines have limited uses, however one possible application
 would be to directly control the joints of a robot with precise control over its
 timing and speed.
 
-The library was written using the \emph{C++17} standard, meaning that it misses
-out on some features of modern C++. Additionally, during development Eigen was
-updated to version \emph{5.0.0} and ROS2 has become the standard in favor of
-ROS1, which is slowly being deprecated. Using modern standards could result in
-better optimization and performance.
+The library was written using the universally adopted \emph{C++17} standard,
+meaning that it misses out on some features of modern C++. Additionally, during
+development Eigen was updated to version \emph{5.0.0} and ROS2 has become the
+standard in favor of ROS1, which is slowly being deprecated. Using modern
+standards could result in better optimization and performance.
 
 \end{document}

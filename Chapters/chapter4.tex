@@ -6,10 +6,30 @@
 
 \section{Qt Framework}
 
-Qt is a C++ framework for the development of native desktop applications.
+Qt is a C++ framework for the development of native desktop applications.For the
+purpose of testing the NURBS library and demonstrating its functionalities, a
+program was created using Qt and C++.
 
-For the purpose of testing the NURBS library and its functionalities, a program
-was created using Qt and C++.
+The central element in a Qt program is the \texttt{QMainWindow} class, which the
+user extends and modifies to their own needs. This window can be configured with
+\emph{widgets} and custom behaviour. In this case, a \texttt{MainWindow} class
+was created with methods that connect the user interface to methods from the
+NURBS library using \emph{signals} and \emph{slots}, two mechanisms on which the
+Qt framework heavily relies on.
+
+Signals and slots are Qt's way of implementing the listener design pattern. A
+class defines signals that it may emit when a specific event happens; for
+example, a \texttt{QButton} will have a public signal \texttt{pressed} that
+emits whenever the button is pressed. A slot can be any member function and can
+be connected to a signal. The slot function gets called when the signal emits.
+The signal may or may not have arguments that it passes to whichever slot is
+connected to it. This could be a numerical value in a number input, or an index
+in a set of radio buttons. A signal can be connected to any slot with matching
+arguments. A signal can be connected to any number of slots, and a slot can be
+triggered by any number of signals. This is the main way to achieve interaction
+between elements in Qt.
+
+\subsection{Graphics view}
 
 The actual visualization of NURBS paths was done using the QGraphicsView module.
 This module implements various drawing functions including those for drawing
@@ -34,24 +54,52 @@ The plotting is done by taking each span's basis matrix and sampling it over an
 interval of $[0,1]$, adjusted to the knot span's actual beginning and end in the
 knot vector.
 
+\subsection{User interaction}
+
+Several methods have been implemented for the user to interact with a NURBS
+curve in the custom scene, both for debugging and to make sure the curves are
+intuitive to work with and manipulate.
+
+The \texttt{qCurve} class draws some additional information along with the curve
+itself. It draws the control points which can be dragged to modify the curve.
+Along the length of the curve it draws the edges of the knot spans. It can draw
+the bounding box around the curve, and display the curvature as a series of
+perpendicular lines. Any of these functions can be enabled and disabled using
+keyboard shortcuts.
+
 \section{RViz}
 
-For testing in a simulation environment a plugin was created for the RViz tool
-often used for visualization of robots.
+For testing in a simulation environment and designing paths for mobile robots a
+plugin was created for the RViz tool often used for visualization of robots.
+
+\subsection{Robot Operating System}
+The \emph{Robot Operating System}, or ROS for short, provides a standardized
+interface between user programs and robot architecture, and is commonly used in
+the field of robotics. 
+
+ROS is mainly built upon the concept of \emph{publishers} and \emph{subscribers}
+sending and receiving data among each other. A publisher sends \emph{messages},
+which can contain various different types of data, to a \emph{topic}. These will
+often contain user commands, sensor data or other real-time information that a
+robot might use. A subscriber subscribes to a topic and receives all messages
+sent to that topic. Subscribers may receive commands for a robot, but also
+collect data from a robot's sensors to show to the user.
+
+\subsection{RViz plugin development}
 
 RViz listens for ROS messages of a given type and, upon receiving data, draws
 the data appropriately. In this case, the message is a Path with timestamps,
 named \texttt{PathStamped}. It supports custom plugins written in C++ that add
 support for drawing custom message types.
 
-RViz itself is created in Qt which means it reuses some of Qt's concepts when it
+RViz itself is created in Qt which means it reuses many of Qt's concepts when it
 comes to plugin development. One important feature is the ability to add custom
 editable properties in the GUI. When making a plugin, each property provides a
 \emph{signal} that is emitted when the property is edited, which can be
 connected to \emph{slots} that execute when the signal emits.
 
 While it uses Qt for its user interface, RViz also uses the \emph{Ogre}
-(Object-Oriented Graphics Rendering Engine) library to render its 3D scenes and
+(Object-oriented Graphics Rendering Engine) library to render its 3D scenes and
 manage objects in a scene.
 
 Two line drawing methods are implemented: BillboardLine and ManualObject.
