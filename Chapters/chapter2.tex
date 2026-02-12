@@ -110,6 +110,13 @@ basis functions of a B-spline can be modified using what is called a knot
 vector. The number of control points on a B-spline is arbitrary and not
 dependent on its degree, unlike Beziers.
 
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.90\linewidth]{bspline_2nd_6pts_crop.png}
+    \label{fig:bspline_normal}
+    \caption{A second degree B-spline with six control points.}
+\end{figure}
+
 We call B-splines \emph{piecewise polynomial} splines because they are composed
 of a series of polynomial segments. This is different from Bezier curves which
 are, by definition, a single polynomial.
@@ -143,6 +150,13 @@ $t$, can be seen as a separate curve controlled by $p+1$ points, much like a
 Bezier. However, this is a much better solution than chaining Bezier curves
 because the model guarantees geometric continuity between knot spans, while a
 chain of Beziers needs to be adjusted manually to be continuous.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.90\linewidth]{bspline_knots_2nd_6pts_crop.png}
+    \label{fig:bspline_knots}
+    \caption{A second degree B-spline with six control points and a modified knot vector.}
+\end{figure}
 
 \begin{figure}[h]
     \centering
@@ -277,12 +291,14 @@ NURBS curves are a further generalization of B-splines. The acronym stands for
     = \sum_{i=1}^{n}R_{i, p}\mathbf{P}_i
 \end{equation}
 
-We describe NURBS as “non-uniform” because its basis functions do not need to be
-uniformly distributed. This is done using a knot vector which defines the
-distribution of a curve's basis functions. B-splines are also non-uniform, as
-described earlier, though this is not reflected in the name.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.90\linewidth]{nurbs_normal_crop.png}
+    \label{fig:nurbs_normal}
+    \caption{A third degree NURBS with six control points.}
+\end{figure}
 
-We also describe NURBS as “rational” because they let us define a ratio, i.e., a
+We describe NURBS as “rational” because they let us define a ratio, i.e., a
 weight, for each control point. This means that we can define the influence that
 a control point has on the overall curve. In terms of basis functions, this
 effectively scales a particular basis function in relation to its neighboring
@@ -290,6 +306,26 @@ functions, creating a \emph{rational basis function} $R_{i, p}$. Another way to
 interpret this is that all control points are defined in \emph{homogenous
 coordinates}, using the three coordinates $x, y$ and $w$, with the resulting
 spline being projected onto the plane $w=1$.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.90\linewidth]{NURBS_weighted_crop.png}
+    \label{fig:nurbs_weight}
+    \caption{A third degree NURBS with six control points and one point weighted.}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.90\linewidth]{nurbs_weight_knot_crop.png}
+    \label{fig:nurbs_knot_weight}
+    \caption{A third degree NURBS with six control points, one point weighted, and a modified knot span.}
+\end{figure}
+
+We also describe NURBS as “non-uniform” because its basis functions do not need to be
+uniformly distributed. This is done using a knot vector which defines the
+distribution of a curve's basis functions. B-splines are also non-uniform, as
+described earlier, though this is not reflected in the name.
+
 
 Both of the aforementioned parametric curve models are subsets of NURBS curves.
 By limiting the parameters of a NURBS curve we can effectively create a Bezier,
@@ -535,9 +571,11 @@ knot span into two separate spans is straightforward.
 \label{chp:comparison}
 
 Most software using parametric curves primarily uses Bezier curves, however they
-are limited in their capabilities. In some fields such as graphic design this is
-not considered a problem, as their simplicity and computation speed are more
-valuable than highly precise shapes. Other fields, such as engineering or
+are limited in their capabilities. Most commonly they are limited to a degree of
+three or lower; for example, the SVG standard is limited to only quadratic and
+cubic curves. \cite{w3c_svg2} In some fields such as graphic design this is not
+considered a problem, as their simplicity, portability and computation speed are
+more valuable than highly precise shapes. Other fields, such as engineering or
 robotics, require highly optimized and precise paths, for which Bezier curves
 are often not sufficient. Software meant for engineering and CAGD, such as
 AutoCAD and Rhino, use NURBS for this reason.
@@ -548,10 +586,11 @@ having modifiable weights gives us a level of flexibility above B-splines
 without increasing the degree, which makes them potentially more efficient than
 B-splines if used wisely.
 
-Because all B-splines can be expressed as a NURBS curve with all weights set to $1.0$,
-and all Bezier curves can be expressed as a B-spline with knot multiplicity, it
-can be concluded that NURBS are a superset of both B-splines and Bezier curves.
-By implementing NURBS it is possible to cover all use cases of the other two
-parametric curve types, as well as providing additional flexibility.
+Because all B-splines can be expressed as a NURBS curve with all weights set to
+$1.0$, and all Bezier curves can be expressed as a B-spline with knot
+multiplicity, it can be concluded that NURBS are a superset of both B-splines
+and Bezier curves. By implementing NURBS it is possible to cover all use cases
+of the other two parametric curve types and conic sections, as well as providing
+additional functionality.
 
 \end{document}

@@ -52,7 +52,12 @@ arguments. A signal can be connected to any number of slots, and a slot can be
 triggered by any number of signals. This is the main way to achieve interaction
 between elements in Qt.
 
-% TODO slika cijelog interfacea ovdje
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.85\linewidth]{app_full.png}
+    \label{fig:app_full}
+    \caption{Interface of the NURBS example application.}
+\end{figure}
 
 \subsection{Graphics view}
 
@@ -99,6 +104,13 @@ keyboard shortcuts.
 
 % TODO slika bounding boxa i curvaturea
 
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.80\linewidth]{boundbox_crop.png}
+    \label{fig:bbox}
+    \caption{A NURBS curve with visible control points, knots and bounding box.}
+\end{figure}
+
 The \texttt{CustomScene} class overrides several methods od
 \texttt{QGraphicsScene} in order to implement the functionality required to
 interact with the curves. This is done through the \texttt{mousePressEvent},  
@@ -126,6 +138,13 @@ fixed-length arrays of data, namely for knot vectors and weights for the active
 curve. On the left side is a \texttt{QListWidget} with a custom item type,
 \texttt{qCurveListItem}, which makes a curve active upon being selected in the
 list.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.85\linewidth]{intersections.png}
+    \label{fig:intersections}
+    \caption{Two NURBS curves with their intersections highlighted in red.}
+\end{figure}
 
 \section{RViz}
 
