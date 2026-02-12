@@ -39,6 +39,10 @@ width. Specifying these types at compile-time instead of using the generic
 parent classes allows the compiler to optimize certain operations for
 constant-size matrices instead of ones with a size only known at runtime.
 
+Normally, matrix multiplication is an expensive operation, with $n\times n$
+matrix multiplication having $O(n^3)$ time complexity, however Eigen's
+parallelization allows this to be much faster than implementing it manually.
+
 \section{Class structure}
 
 The main data structure that is available to the user is the \texttt{Curve}
@@ -154,6 +158,13 @@ with fewer points.
 
 % dijagram kako izgleda kad se gleda samo midpoint, vs kad se gledaju dvije
 % točke za span reda 3
+
+\subsection{Piecewise Bezier representation}
+
+As discussed in Chapter \ref{chp:comparison}, it is possible to represent Bezier curves
+as NURBS. Converting a NURBS with modified weights results in rational Bezier
+curves, whereas an unweighted NURBS (i.e. a B-spline) will produce regular
+Bezier curves.
 
 \subsection{Derivative evaluation}
 

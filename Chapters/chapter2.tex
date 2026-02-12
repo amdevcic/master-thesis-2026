@@ -365,7 +365,7 @@ in any case.
 
 One property of NURBS that is not applicable to Bezier curves and B-splines is
 that they can represent conic sections, i.e., circles, ellipses and parabolas.
-This is made possible by the ability to weigh specific points.
+This is made possible by the ability to weigh specific points. \cite{farin1992from}
 
 \subsection{Matrix representation of NURBS}
 
@@ -491,7 +491,8 @@ Equation \ref{eq:curvature} defines the curvature of a parametric curve at a
 parameter $t$. This value represents the inverse of the radius of a circle that
 can be inscribed inside the curve; a straight line has a curvature of infinity.
 This formula is not specific to NURBS but can be applied to any
-twice-differentiable parametric curve.
+twice-differentiable parametric curve, or thrice-differentiable for the
+derivative.
 
 \begin{equation}
     \label{eq:curvature}
@@ -531,6 +532,7 @@ knot span into two separate spans is straightforward.
 % \end{equation}
 
 \section{Comparison of NURBS, B-splines and Bezier curves}
+\label{chp:comparison}
 
 Most software using parametric curves primarily uses Bezier curves, however they
 are limited in their capabilities. In some fields such as graphic design this is

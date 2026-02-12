@@ -4,6 +4,12 @@
 \chapter{Applications and improvements}
 \label{chp:improvements}
 
+\section{NURBS library applications}
+The library was designed with mobile robot navigation in mind and as such it has
+everything necessary to define and use 2-dimensional paths.
+
+\section{Improvements and missing features}
+
 The library was created for the purpose of designing top-down paths for vehicles
 which move indoors, on flat floors, and as such works only in 2D space. As it
 stands it can be used for any 2D application, including controlling robot
@@ -29,5 +35,13 @@ meaning that it misses out on some features of modern C++. Additionally, during
 development Eigen was updated to version \emph{5.0.0} and ROS2 has become the
 standard in favor of ROS1, which is slowly being deprecated. Using modern
 standards could result in better optimization and performance.
+
+\section{Future work}
+
+One possible way to extend the library for ease of use is to create Python
+bindings to allow scripting with NURBS curves. This would prevent the user from
+having to write and re-compile C++ code for simple tasks such as plotting. This
+would also allow interoperability with other popular Python libraries such as
+\emph{NumPy} and \emph{matplotlib}.
 
 \end{document}
