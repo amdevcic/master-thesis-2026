@@ -4,6 +4,7 @@
 
 \usepackage{blindtext}
 \usepackage{subfiles}
+\usepackage{multicol}
 
 \graphicspath{ {./Images/} }
 
@@ -65,7 +66,7 @@
 
 
 % Titlepage is automatically generated / Naslovnica se automatski generira
-\maketitle
+% \maketitle
 
 
 %--- THESIS ASSIGNMENT / ZADATAK -----------------------------------------------
@@ -79,7 +80,10 @@
 
 \begin{zahvale}
   % Write in the acknowledgment / Ovdje upišite zahvale
-  Thanks for the tea...
+  I would like to thank my mentor, dr.sc. Željka Mihajlović, for guiding me
+  through my university career, my colleagues at Romb Technologies for
+  supporting me in being a better developer, and my friends and loved ones for
+  always believing in me. 
 \end{zahvale}
 
 % Page numbering starts from here / Odovud započinje numeriranje stranica
@@ -109,10 +113,7 @@
 % Applications and improvements
 \subfile{Chapters/chapter6.tex}
 
-\chapter{Conclusion}
-\label{chp:conclusion}
-
-\blindtext
+\subfile{Chapters/conclusion.tex}
 
 \subfile{Chapters/acknowledgement.tex}
 
@@ -128,27 +129,44 @@
 
 % Abstract in English
 \begin{abstract}
-  Enter the abstract in English.
-  
-  \blindtext 
+  The thesis describes the design of mobile robot paths, with a focus on
+  material handling vehicles, such as forklifts. It analyzes the differences
+  between B\'ezier curves, B-splines and NURBS for this purpose, with the most
+  important property being G3 continuity. A matrix notation of NURBS is
+  described. A C++ library for the creation and usage of NURBS curves was
+  developed using the Eigen library. The thesis also describes the visualization
+  of parametric curves and the tools most commonly used in robotics. An
+  interactive Qt desktop application was created for testing the NURBS curve
+  library, and an RViz plugin was developed to be used with mobile robots in
+  practice. The library and plugin are tested on a series of examples and the
+  results show that the library is suitable for use in mobile robot path
+  planning.
 \end{abstract}
 
 \begin{keywords}
-  the first keyword; the second keyword; the third keyword
+  NURBS; mobile robots; parametric curves; Eigen; geometric continuity; Qt
 \end{keywords}
 
 
 % Sažetak na hrvatskom
 \begin{sazetak}
-  Unesite sažetak na hrvatskom.
-
-  \blindtext
+  Rad opisuje dizajn putanja mobilnih robota, pogotovo vozila koja prevoze
+  teret, kao viličari. Analizira razlike između B\'ezierovih krivulja, B-spline
+  krivulja i NURBS krivulja u tu svrhu, s najvažnijim svojstvom da ima G3
+  kontinuitet. Opisan je matrični zapis NURBS krivulja. Razvijena je C++
+  biblioteka za stvaranje i korištenje NURBS krivulja korištenjem Eigen
+  biblioteke. Rad također opisuje vizualizaciju parametarskih krivulja i alate
+  koji se najčešće koriste u robotici. Izrađena je interaktivna Qt desktop
+  aplikacija za testiranje NURBS biblioteke krivulja, a razvijen je i RViz
+  dodatak za korištenje s mobilnim robotima u praksi. Biblioteka i dodatak
+  testirani su na nizu primjera, te rezultati pokazuju da je biblioteka prikladna
+  za korištenje u planiranju putanja mobilnih robota.
 \end{sazetak}
 
 \begin{kljucnerijeci}
-  prva ključna riječ; druga ključna riječ; treća ključna riječ
+  NURBS; mobilni roboti; parametarske krivulje; Eigen; geometrijski
+  kontinuitet; Qt
 \end{kljucnerijeci}
-
 
 
 %--- APPENDIX / PRIVITCI -------------------------------------------------------

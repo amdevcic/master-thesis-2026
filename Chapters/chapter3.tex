@@ -4,8 +4,8 @@
 \chapter{NURBS curve implementation}
 \label{chp:nurbsimplementation}
 
-For the purpose of path planning for autonomous guided vehicles, a C++ library
-was created for the implementation and manipulation of NURBS curves. The library
+For the purpose of path planning for autonomous mobile robots, a C++ library was
+created for the implementation and manipulation of NURBS curves. The library
 utilizes the Eigen library for its linear algebra functions.
 
 The library implements all necessary functions for creating and using NURBS
@@ -41,7 +41,8 @@ constant-size matrices instead of ones with a size only known at runtime.
 
 Normally, matrix multiplication is an expensive operation, with $n\times n$
 matrix multiplication having $O(n^3)$ time complexity, however Eigen's
-parallelization allows this to be much faster than implementing it manually.
+vectorization and SIMD capabilities allow this to be much faster than
+implementing it manually.
 
 \section{Class structure}
 
@@ -57,12 +58,12 @@ user.
 The \texttt{Curve} class represents a complete NURBS curve, i.e. sequence of
 continuous knot spans. It stores some of the basic data of a particular curve,
 including its control points, knot vector, and order. Internally it is
-represented by an array of \emph{Span} objects containing the data required to
+represented by an array of \texttt{Span} objects containing the data required to
 evaluate many NURBS operations, though they are not accessible to the end-user.
 
 Methods that operate on a single span, rather than the entire curve, involve
 evaluating which spans are being affected, then propagating the function call to
-the \emph{Span} objects themselves. The \texttt{getKnotSpanIndex(t)} method
+the \texttt{Span} objects themselves. The \texttt{getKnotSpanIndex(t)} method
 returns the index of the knot span containing the value $t$. The result is
 always a single span and never a set of spans. If the value $t$ is itself a knot
 with a multiplicity greater than one, the function returns the first span after
@@ -91,80 +92,87 @@ weight matrices using the \texttt{updateControlPoints} method.
 
 \section{Key method implementations}
 
-\subsection{Creating a curve}
-
 The \texttt{Curve} class has several constructors, however the main intended
 method of instantiation is using a sequence of control points. The curve's order
 defaults to three but can be specified. The knot vector is optional, and if it
-is not provided a uniformly spaced knot vector is generated. As per the
-definition of NURBS, the number of control points for a curve of degree $p$ must
-be equal or greater than $p+1$. Given a sequence of $N$ control points, an order
-$p$ and a knot vector, the constructor generates $N-p$ \texttt{Span} objects.
+is not provided a uniformly spaced knot vector is generated. If weights are not
+specified they are all set to $1.0$. As per the definition of NURBS, the number
+of control points for a curve of degree $p$ must be equal or greater than $p+1$.
+Given a sequence of $N$ control points, an order $p$ and a knot vector, the
+constructor generates $N-p$ \texttt{Span} objects.
 
 The \texttt{Span} constructor takes a subset of control points, a subset of a
-knot vector and the span's order. None of the arguments are optional. The first
-step is to generate the span's basis function based on the given knot vector
-segment and the given order. The basis function is computed according to
-Equation \eqref{eq:basisfunc} and stored in the span. Using the basis function
-and the weighted control point segment the span computes the product of the
-basis function with the control point matrix, and the basis function with the
-weight vector, named \texttt{cached\_vbf\_} and \texttt{cached\_wbf\_}
-respectively. With these data members calculated the span is returned and stored
-in the curve object.
-
-\subsection{Curve and span methods}
+knot vector and the span's order. The first step is to generate the span's basis
+function based on the given knot vector segment and order. The basis function is
+computed according to Equation \eqref{eq:basisfunc} and stored in the span.
+Using the basis function and the weighted control point segment the span
+computes the product of the basis function with the control point matrix, and
+the basis function with the weight vector, named \texttt{cached\_vbf\_} and
+\texttt{cached\_wbf\_} respectively. After calculating and caching these data
+members, the span is returned and stored in the curve object.
 
 The \texttt{valueAt} method directly implements Equation \eqref{eq:nurbs_point}
 using matrix notation. The helper function \texttt{\_powSeries(t, p)} computes
 the powers of $t$ up to $p$ in accordance with Equation \eqref{eq:t_powseries}.
 
 \begin{minted}{cpp}
-    Point Span::valueAt(double u) const
-    {
-    Eigen::RowVectorXd pw = _powSeries(u, p_);
-    return (pw * cached_vbf_) / pw.dot(cached_wbf_);
-    }
+    Point Span::valueAt(double u) const { Eigen::RowVectorXd pw = _powSeries(u,
+    p_); return (pw * cached_vbf_) / pw.dot(cached_wbf_); }
 \end{minted}
 
 The \texttt{length} method approximates the total length of a curve. Exact
 calculation of the length of any polynomial parametric curve of the third degree
-or higher is proven to be impossible. \citenone  The method instead uses
-Chebyshev polynomials to approximate the length of the span with a negligible
-error \texttt{epsilon}.
+or higher in closed form is not possible. The method instead uses Chebyshev
+approximation to calculate the length of the span with a negligible error
+\texttt{epsilon}, equal to the margin of error in C++ doubles.
 
 The \texttt{boundingBox} method creates an axis-aligned bounding box (AABB)
-around the curve.
+around the curve. It does this using the \texttt{extrema} method to find all
+local maxima and minima on the $x$ and $y$ axis, and finding the ones with the
+highest and lowest values.
+
+The \texttt{extrema} method and the \texttt{roots} method both use Eigen's
+polynomial solver module to find the roots of a polynomial, in this case the
+derivative and the span itself respectively.
 
 \subsection{Piecewise linear representation}
 
 The \texttt{polyline} method creates a sequence of points suitable for drawing
 or other purposes when only an approximation of the curve is needed. One
 possible way, and the simplest way to implement this would be to iterate over a
-fixed number of uniformly spaced $t$ values, however this can cause problems as
+fixed number of uniformly spaced $t$ values. However, this can cause problems as
 it does not take into account the scale of the curve and its curvature; a curve
 could have the same number of points as another curve ten times its length, and
 a curve that is equal to a straight line could have the same number of points as
 one with many sharp twists.
 
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.85\linewidth]{polyline_example.png}
+    \caption{Illustration of one step of the polyline algorithm. $p=3$}
+    \label{fig:polyline_example}
+\end{figure}
+
+
 The \texttt{polyline} method takes a \texttt{flatness} argument which defines
 the tolerance for the error between the linear approximation and the actual
-curve.
+curve. The implementation uses iterative subdivision to approximate the curve.
+For each knot span of the curve, the method checks $p-1$ equally spaced internal
+points between the beginning and end of the span, and finds the maximum distance
+from the chord created by the segment's beginning and end point. The points on
+the curve are projected onto the line segment. If the distance from the line
+segment to the actual curve is within the threshold defined as
+\texttt{flatness}, the segment is added to the final line. Otherwise, it is
+subdivided further at the point with maximum deviation. This is illustrated in
+Figure \ref{fig:polyline_example}.
 
-For each segment of the curve, the method checks $p-1$ points and finds the
-maximum distance from the line segment created by the segment's beginning and
-end point. Using $p-1$ points makes it impossible for the maximum distance to be
-determined as the intersection of the line and curve, which would be possible
-with fewer points.
+\subsection{Piecewise B\'ezier representation}
 
-% dijagram kako izgleda kad se gleda samo midpoint, vs kad se gledaju dvije
-% točke za span reda 3
-
-\subsection{Piecewise Bezier representation}
-
-As discussed in Chapter \ref{chp:comparison}, it is possible to represent Bezier curves
-as NURBS. Converting a NURBS with modified weights results in rational Bezier
-curves, whereas an unweighted NURBS (i.e. a B-spline) will produce regular
-Bezier curves.
+As discussed in Chapter \ref{chp:comparison}, it is possible to represent
+B\'ezier curves as NURBS. Similarly, a NURBS curve can be converted into a
+series of B\'ezier curves. Converting a NURBS with modified weights results in
+rational B\'ezier curves, whereas an unweighted NURBS (i.e. a B-spline) will
+produce regular B\'ezier curves.
 
 \subsection{Derivative evaluation}
 
@@ -204,16 +212,16 @@ their minimum and maximum.
 
 the \texttt{\_splittingCoeffs} helper function creates a pair of matrices which,
 when multiplied with a span's basis function, splits the span into two new spans
-at a given point $t$. \citenone
+at a given point $t$.
 
 This function is used in methods such as \texttt{polyline} and
 \texttt{intersections}, but also in the \texttt{Curve} class for literal curve
 splitting.
 
 \subsection{Intersections between curves}
-Finding all intersections between two spans is known to be impossible. \citenone
-Instead, an iterative method is used to approximate the intersections with an
-error of \texttt{epsilon}.
+Finding all intersections between two spans is known to be impossible. Instead,
+an iterative method is used to approximate the intersections with an error of
+\texttt{epsilon}.
 
 The \texttt{intersections} method uses a similar algorithm to the
 \texttt{polyline} method to determine if a span is approximately a straight

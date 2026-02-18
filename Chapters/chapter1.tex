@@ -5,12 +5,12 @@
 \label{chp:robotpathdesign}
 
 In the past, AGV-s used physical rails, or magnetized or induction tracks,
-placed in the environment to guide their movement. Modern AGV-s have their paths
-defined in a controller application which sends commands to dictate their
-movement. While driving, the robots use various sensors to verify their
+placed in the environment to guide their movement. Modern mobile robots have
+their paths defined in a controller application which sends commands to dictate
+their movement. While driving, the robots use various sensors to verify their
 velocity, position and orientation  and correct their path if necessary. Some
-AGV-s require reflective stickers for navigation, though in other cases no
-changes need to be made to the environment. In that case the AGV uses a
+mobile robots require reflective stickers for navigation, though in other cases
+no changes need to be made to the environment. In that case the robot uses a
 combination of LIDAR sensors and computer vision to verify their position in
 space and their speed.
 
@@ -25,36 +25,39 @@ space and their speed.
 
 Two mathematical concepts relevant to mobile robot navigation are geometric
 continuity and parametric continuity of the robot's path. Parametric continuity
-of the n-th degree, or $C^n$, is achieved when the parameters of the n-th
-derivative of a function are continuous. Geometric continuity of the n-th
-degree, or $G^n$, is a more relaxed form of parametric continuity, and is
-achieved if a function can be reparametrized as a $C^n$ continuous function.
+of the n-th degree, or $C^n$, is achieved when the n-th derivative of a function
+exists and is continuous. Geometric continuity of the n-th degree, or $G^n$, is
+a more relaxed form of parametric continuity, and is achieved if a function can
+be reparametrized as a $C^n$ continuous function.
 \cite{geometric_cont}
 
-A $G^0$ continuous spline is one where all of the points on the curve are
-continuous, whereas a $G^1$ continuous spline has a continuous tangent direction
-as well as position. A spline with $G^2$ continuity may be appropriate for most
-uses. It has continuity in position, speed and acceleration.
+A $G^0$ continuous function is one where all of the points on the curve are
+continuous, whereas a $G^1$ continuous function has a continuous tangent
+direction as well as position. A function with $G^2$ continuity may be
+appropriate for most uses. It has continuity in position, tangent direction and
+curvature. It differs from a $C^2$ continuous curve in that its derivatives are
+only continuous in direction, but a $C^2$ continuous curve would also have a
+continuous magnitude in speed and acceleration. \cite{kokot2021arxiv}
 
-For the navigation of multi-wheeled mobile robots it is important to take into
-account the \emph{jerk}, or the rate of change of acceleration. A curve where
-the acceleration changes continuously would be considered to have $G^3$
-continuity.
-\cite{kokot2021arxiv}
+For the navigation of multi-wheeled mobile robots it is important for the path
+to have a continuous curvature derivative. This is only possible using curves
+with $G^3$ continuity, as its definition requires the third derivative of the
+curve, which will be discussed in a later chapter. Following a path with a
+continuous curvature derivative means that the robot's steering angle is also
+continuous. If this were not the case, the robot would need to stop and
+reposition itself whenever the continuity was broken.
 
-A curve appropriate for mobile robot path design needs to have three attributes:
-it must have geometric continuity of at least the third order, it must be easy
-to manipulate to maximize the usage of available space, and it must be able to
-be shaped in such a way to minimize the derivative of the curvature.
-
-The curvature derivative is important because it indicates how much and how
+The curvature derivative is also important because it indicates how much and how
 sharply the mobile robot must turn its steering wheels. A high curvature
 derivative means that the robot needs to rotate its steering wheel a greater
 angle in a shorter amount of time, which may put strain on the robot and be
 dangerous for the people around it, especially if carrying heavy or unstable
 cargo. In addition, robots have a physical limit as to how quickly they can turn
-based on their size and architecture.
+based on their size and architecture. \cite{mirko_phd}
 
-
+A curve appropriate for mobile robot path design needs to have three attributes:
+it must have geometric continuity of at least the third order, it must be easy
+to manipulate to maximize the usage of available space, and it must be able to
+be shaped in such a way to minimize the derivative of the curvature.
 
 \end{document}

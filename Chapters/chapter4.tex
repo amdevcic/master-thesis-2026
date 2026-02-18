@@ -1,20 +1,21 @@
 \documentclass[../main.tex]{subfiles}
 \begin{document}
 
-\chapter{Robot path visualisation}
+\chapter{Robot path visualization}
 \label{chp:robotpathvisual}
 
 \section{Qt Framework}
 
-Qt is a C++ framework for the development of native desktop applications.For the
+Qt is a C++ framework for the development of native desktop applications. For the
 purpose of debugging the NURBS library and demonstrating its functionalities, a
-program was created using Qt and C++.
+program was created using Qt and C++. Visualizations of curves in earlier
+chapters were also created using this application.
 
 The central element in a Qt program is the \texttt{QMainWindow} class, which the
 user extends and modifies to their own needs. This window can be configured with
 \emph{widgets} and custom behaviour. In this case, a \texttt{MainWindow} class
 was created with methods that connect the user interface to methods from the
-NURBS library using \emph{signals} and \emph{slots}, two mechanisms on which the
+NURBS library using \emph{signals} and \emph{slots}, two mechanisms which the
 Qt framework heavily relies on.
 
 \begin{minted}[linenos]{cpp}
@@ -67,12 +68,15 @@ including those for drawing line segments and points.
 
 A graphics view widget must be initialized with a \texttt{QGraphicsScene} which
 manages objects to be drawn as well as handling user input. Each object in a
-scene must inherit from \texttt{QGraphicsObject}. a \texttt{CustomScene} class
+scene must inherit from \texttt{QGraphicsObject}. A \texttt{CustomScene} class
 was created to handle drawing multiple curves on the screen.
 
 The class \texttt{qCurve}, which inherits from both \texttt{QGraphicsObject} and
 \texttt{Curve}, was created as a wrapper to provide Qt drawing functionality to
-a NURBS curve. It overrides some methods to 
+a NURBS curve. It overrides some methods of \texttt{QGraphicsObject}, such as
+\texttt{paint}, \texttt{type} and \texttt{boundingRect}, to specify drawing and
+interaction operations unique to NURBS curves while staying compatible with the
+Qt API. 
 
 Overloading the \texttt{paint} function of \texttt{QGraphicsObject} allows us to
 define how we want our object to be drawn in a \texttt{QGraphicsView} widget. In
@@ -81,13 +85,10 @@ curve itself, but other data associated with it, such as its control points,
 knots, or its bounding box. The \texttt{polyline} method defined in the NURBS
 library creates a sequence of points for the express purpose of quick and simple
 visualization. On every scene update each curve's polyline is recomputed and
-drawn using the \texttt{drawLine} method of the \texttt{QPainter} class.
-
-The open-source Qt widget \emph{QCustomPlot} is used to visualize the basis functions
-of the selected curve\footnote{Available at \url{https://www.qcustomplot.com/}}.
-The plotting is done by taking each span's basis matrix and sampling it over an
-interval of $[0,1]$, adjusted to the knot span's actual beginning and end in the
-knot vector.
+drawn using the \texttt{drawLine} method of the \texttt{QPainter} class. A scene
+is only updated if something inside it was modified, such as the control points
+on a curve. If another curve in a scene was not modified and has its polyline
+cached, it will not recompute its polyline.
 
 \subsection{User interaction}
 
@@ -102,7 +103,12 @@ the bounding box around the curve, and display the curvature as a series of
 perpendicular lines. Any of these functions can be enabled and disabled using
 keyboard shortcuts.
 
-% TODO slika bounding boxa i curvaturea
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.70\linewidth]{curvature_example.png}
+    \label{fig:curvature_example}
+    \caption{A NURBS curve with its curvature displayed. The color represents the value of $t$.}
+\end{figure}
 
 \begin{figure}[h]
     \centering
@@ -111,18 +117,10 @@ keyboard shortcuts.
     \caption{A NURBS curve with visible control points, knots and bounding box.}
 \end{figure}
 
-The \texttt{CustomScene} class overrides several methods od
+The \texttt{CustomScene} class overrides several methods of
 \texttt{QGraphicsScene} in order to implement the functionality required to
 interact with the curves. This is done through the \texttt{mousePressEvent},  
 \texttt{mouseMoveEvent} and \texttt{mouseReleaseEvent} methods.
-
-% \begin{minted}{cpp}
-% protected:
-%     void drawForeground(QPainter* painter, const QRectF& rect) Q_DECL_OVERRIDE;
-%     void mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent) Q_DECL_OVERRIDE;
-%     void mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent) Q_DECL_OVERRIDE;
-%     void mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent) Q_DECL_OVERRIDE;
-% \end{minted}
 
 The \texttt{mousePressEvent} method handles any mouse presses inside the scene.
 When the left mouse button is pressed, it checks for collision with each curve
@@ -130,14 +128,32 @@ and control point in the scene. If a curve was clicked, it becomes selected.
 Control points can be dragged and moved around the scene. Holding the right
 mouse button projects a line onto the selected curve and draws its tangent.
 
-% TODO slika tangente ovdje
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.80\linewidth]{tangent_example.png}
+    \label{fig:tangent_example}
+    \caption{A NURBS curve with a point (in red) being projected onto a curve, and its tangent in the resulting point.}
+\end{figure}
 
 Underneath the graphics view are a few other widgets for editing the currently
-selected curve. The \texttt{qVectorField} widget was created to edit
-fixed-length arrays of data, namely for knot vectors and weights for the active
-curve. On the left side is a \texttt{QListWidget} with a custom item type,
-\texttt{qCurveListItem}, which makes a curve active upon being selected in the
-list.
+selected curve, as can be seen in Figure \ref{fig:controls_example}. The
+\texttt{qVectorField} widget was created to edit fixed-length arrays of data,
+namely for knot vectors and weights for the active curve. On the left side is a
+\texttt{QListWidget} with a custom item type, \texttt{qCurveListItem}, which
+makes a curve active upon being selected in the list.
+
+The open-source Qt widget \emph{QCustomPlot} is used to visualize the basis functions
+of the selected curve\footnote{Available at \url{https://www.qcustomplot.com/}}.
+The plotting is done by taking each span's basis matrix and sampling it over an
+interval of $[0,1]$, adjusted to the knot span's actual beginning and end in the
+knot vector.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1.0\linewidth]{controls_closeup.png}
+    \caption{Closeup of the controls for a NURBS curve.}
+    \label{fig:controls_example}
+\end{figure}
 
 \begin{figure}[h]
     \centering
@@ -164,6 +180,11 @@ robot might use. A subscriber subscribes to a topic and receives all messages
 sent to that topic. Subscribers may receive commands for a robot, but also
 collect data from a robot's sensors to show to the user.
 
+RViz works by subscribing to topics in a system and visualizing their data.
+Because a topic can have many subscribers at a time, and messages are broadcast
+to all of its subscribers at once, it can be inserted into an existing system to
+visualize and debug without disrupting any other subscribers.
+
 \subsection{PathStamped message}
 
 The message type used to describe a mobile robot's path is defined as
@@ -173,15 +194,32 @@ that unambiguously describes the NURBS curve contains its degree, its weighted
 control points and its knot vector. This information is used by the plugin to
 construct a NURBS object and use its functions. This means that the sender does
 not need to use the NURBS library; the message may be predefined in a file or
-created by a different NURBS implementation.
+created by a different NURBS implementation, as long as it follows the message
+structure.
 
+The message contains some data that is relevant to the robot and user, but not
+related to the NURBS curve itself. This includes the path's unique ID and its
+start and end nodes. Though it is important to mention, it will not be used in
+the path's visualization.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\linewidth]{pathstamped.png}
+    \label{fig:path_message}
+    \caption{UML diagram of the PathStamped message type.}
+\end{figure}
+
+While the immediate purpose for this message is to visualize it with RViz, its
+real, long-term purpose is to be used for communication between a mobile robot
+and its controller, which is how it was designed.
 
 \subsection{RViz plugin development}
 
 RViz listens for ROS messages of a given type and, upon receiving data, draws
 the data appropriately. In this case, the message is a Path with timestamps,
-named \texttt{PathStamped}. It supports custom plugins written in C++ that add
-support for drawing custom message types.
+named \texttt{PathStamped}, which is a custom message type and is not included
+in ROS. RViz supports custom plugins written in C++, also called
+\emph{displays}, that add support for drawing custom message types.
 
 RViz itself is created in Qt which means it reuses many of Qt's concepts when it
 comes to plugin development. One important feature is the ability to add custom
@@ -191,8 +229,24 @@ connected to \emph{slots} that execute when the signal emits.
 
 While it uses Qt for its user interface, RViz also uses the \emph{Ogre}
 (Object-oriented Graphics Rendering Engine) library to render its 3D scenes and
-manage objects in a scene.
+manage objects in a scene. An instance of this plugin creates a single object in
+the scene. The scene may contain other displays or meshes as well as the NURBS
+path drawn by the plugin. A scene may have multiple instances of the plugin,
+i.e., listeners for multiple ROS topics.
 
-Two line drawing methods are implemented: BillboardLine and ManualObject.
+The \texttt{processMessage} method parses received messages into usable NURBS
+curves. The method works by reading all the data fields of a given
+\texttt{PathStamped} message and uses them to construct a NURBS curve using the
+library from Chapter \ref{chp:nurbsimplementation}. The plugin stores the last
+received curve to draw and perform other operations on.
+
+The \texttt{updateVisuals} method creates the line to be drawn in the scene. Two
+line drawing styles are implemented: \texttt{BillboardLine} and
+\texttt{ManualObject}. A \texttt{BillboardLine} path creates a series of
+\emph{billboards}, or 3D planes always facing the camera, to draw its lines.
+This allows the user to set the width of the line. The line has two properties:
+its color and its line width. A \texttt{ManualObject} path is defined only by a
+set of points and a color, and it is rendered as an OpenGL line strip, meaning
+that it has a fixed width of 1 pixel on all displays.
 
 \end{document}

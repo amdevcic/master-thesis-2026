@@ -6,14 +6,18 @@
 
 \section{NURBS library applications}
 The library was designed with mobile robot navigation in mind and as such it has
-everything necessary to define and use 2-dimensional paths.
-
-\section{Improvements and missing features}
+nearly everything necessary to define and use 2-dimensional paths.
 
 The library was created for the purpose of designing top-down paths for vehicles
 which move indoors, on flat floors, and as such works only in 2D space. As it
 stands it can be used for any 2D application, including controlling robot
 manipulators, e.g. in plotting or CNC machines.
+
+The \texttt{piecewiseBezier} method can be used to convert NURBS curves into
+B\'ezier curves which, unlike NURBS, are supported in most graphics
+applications.
+
+\section{Improvements and missing features}
 
 One possible improvement to the library would be the ability to define NURBS
 curves in any dimension, including 1D and from 3D onward. This could be achieved
@@ -24,11 +28,9 @@ in 2-dimensional \emph{parametric} space (parameters $t$ and $v$) would require
 significant refactoring as all the methods rely on a scalar $t$ value. 
 
 Three-dimensional splines can be used to define precise paths for industrial
-robot manipulators.
-
-One-dimensional splines have limited uses, however one possible application
-would be to directly control the joints of a robot with precise control over its
-timing and speed.
+robot manipulators. One-dimensional splines have limited uses, however one
+possible application would be to directly control the joints of a robot with
+precise control over its timing and speed.
 
 The library was written using the universally adopted \emph{C++17} standard,
 meaning that it misses out on some features of modern C++. Additionally, during
@@ -36,12 +38,34 @@ development Eigen was updated to version \emph{5.0.0} and ROS2 has become the
 standard in favor of ROS1, which is slowly being deprecated. Using modern
 standards could result in better optimization and performance.
 
+Some common operations on NURBS curves, such as raising and lowering curve
+order, have not been implemented or have been implemented partially. These were
+not necessary for the task of planning mobile robot paths. However, these
+functions must exist in a fully-featured NURBS library and may be implemented
+later. For example, in theory, the derivative of a span of degree $p$ can itself
+be expressed as a span of degree $p-1$, though this has not been implemented.
+Additionally, some methods were adapted directly from sources that were written
+many years ago and not with modern software architecture in mind. Though the
+most time-critical and commonly used methods have already been optimized,
+rewriting these methods could improve both the readability and performance of
+the library. 
+
+The example application could use more features for the analysis of NURBS
+curves, such as the derivative and curvature plots from the previous chapter.
+These could be implemented using \emph{QCustomPlot} much like the basis function
+plots. A feature to export curve data in a standardized format such as
+\emph{JSON} or \emph{YAML} could prove useful in testing and debugging curves.
+
 \section{Future work}
 
 One possible way to extend the library for ease of use is to create Python
 bindings to allow scripting with NURBS curves. This would prevent the user from
-having to write and re-compile C++ code for simple tasks such as plotting. This
-would also allow interoperability with other popular Python libraries such as
-\emph{NumPy} and \emph{matplotlib}.
+having to write and re-compile C++ code for simple tasks such as plotting, as
+was done in Chapter \ref{chp:results}. This would also allow interoperability
+with other popular Python libraries such as \emph{NumPy} and \emph{matplotlib}.
+
+The next steps for the library and its ROS message type are to implement missing
+features in the library, and to integrate the library with existing roadmap
+planning software for the user and navigation software for mobile robots.
 
 \end{document}

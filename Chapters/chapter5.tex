@@ -6,11 +6,243 @@
 
 \section{NURBS library}
 
+To test if the library is truly suited for navigation of mobile robots, a series
+of tests was made on a fourth degree curve with a uniform knot vector, as
+defined in Table \ref{tab:points}. A short C++ program was created to sample the
+curve at a series of uniformly spaced parameter values, and the resulting data
+was plotted using Python and the \texttt{matplotlib} library. If the methods for
+evaluating and differentiating NURBS curves are implemented correctly, the
+following should be true: the first three derivatives are continuous, indicating
+G3 continuity, and the curvature and curvature derivative should be continuous.
 
+\begin{table}[h]
+\centering
+\begin{tabular}{ccc}
+\hline
+$x$ & $y$ & $w$ \\
+\hline
+0  & 0  & 1.0 \\
+10 & 10 & 1.0 \\
+0  & 20 & 1.0 \\
+10 & 30 & 1.0 \\
+0  & 40 & 1.0 \\
+10 & 50 & 1.0 \\
+\hline
+\end{tabular}
+\caption{Control points for test curve}
+\label{tab:points}
+\end{table}
+
+The curve's first three derivatives were uniformly sampled across a hundred
+points from $0.0$ to $1.0$ using the \texttt{derivativeAt} method of the
+\texttt{Curve} class. The partial derivatives on the $x$ and $y$ axes can be
+seen on Figures \ref{fig:test_d1}, \ref{fig:test_d2} and \ref{fig:test_d3}. The
+test curve is split into two knot spans at $t=0.5$, which is shown on the plots
+as a dashed vertical line.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.7\linewidth]{d1.png}
+    \caption{The first derivative, with $x$ in red and $y$ in blue.}
+    \label{fig:test_d1}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.7\linewidth]{d2.png}
+    \caption{The second derivative, with $x$ in red and $y$ in blue.}
+    \label{fig:test_d2}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.7\linewidth]{d3.png}
+    \caption{The third derivative, with $x$ in red and $y$ in blue.}
+    \label{fig:test_d3}
+\end{figure}    
+
+It is obvious from Figure \ref{fig:test_d3} that, while the third derivative is
+indeed continuous, it has a sharp peak in the middle, meaning that the fourth
+derivative will not be continuous. This aligns with the fact that a $p$-th
+degree curve will have continuity of order $p-1$. Each knot span's derivative is
+a polynomial which is one degree lower than the previous.
+
+The curvature and its derivative were uniformly sampled along the curve along
+with the derivatives, using the \texttt{curvatureAt} and
+\texttt{curvatureDerivativeAt} methods. The result can be seen in Figure
+\ref{fig::curvature_plot}.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.7\linewidth]{curvature.png}
+    \caption{The curvature $\kappa$ in teal and its derivative in orange.}
+    \label{fig::curvature_plot}
+\end{figure} 
+
+The \texttt{polyline} method was tested along with the derivatives and
+curvature. For reference, the \texttt{valueAt} method was uniformly sampled
+along the same points as the previous tests. Figure \ref{fig:polyline_curvature}
+shows a side-by-side comparison of the two methods and their vertices, with the
+$x$ and $y$ axes swapped for clarity. Both curves appear visually identical but
+have different point densities. To illustrate the efficiency of both methods,
+the absolute value of the curvature at the given points is displayed using a
+color ramp. The naive method with uniformly sampled points, shown on the bottom,
+has more points overall. The middle portion has equally dense points on areas
+with high curvature and low curvature, while the ends of the curve are more
+sparse due to the fact that we are sampling by parameter values, not by length.
+The \texttt{polyline} method, on the other hand, has fewer points overall.
+Despite the method not taking the curvature formula into account, there is a
+clear correlation between point density and curvature. The ends of the curve are
+in fact more dense than the uniformly sampled method, while the middle has
+relatively few points. Uniform sampling in larger intervals may lead to fewer
+points along straight sections, but it would also result in sparse points along
+high-curvature segments.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\linewidth]{polyline_curvature.png}
+    \caption{Comparison of two polyline algorithms. (Top) \texttt{polyline}
+    method. (Bottom) Uniform sampling of $t$.}
+    \label{fig:polyline_curvature}
+\end{figure}
 
 \section{RViz plugin}
 
 Multiple configurations of NURBS curves were tested in the RViz plugin to test
-its accuracy.
+its accuracy. The configurations can be seen in Listing \ref{lst:yaml-configs}.
+For the sake of clarity only the data relevant to NURBS curves is listed. The
+message uses the $z$ coordinate to define weights. The reasoning behind this
+design choice was that the control points are defined in homogenous space and
+projected onto the plane $w=1$.
+
+In order to run ROS and RViz locally, they need to be installed on an
+\emph{Ubuntu} system. The setup for testing with RViz requires three programs.
+In one terminal the \texttt{roscore} command must be executed and left running,
+which runs the ROS server that connects all nodes. The second terminal needs to
+run the \texttt{rviz} command to run RViz. The third terminal is used to send
+messages via the \texttt{rostopic} command.
+
+Having built the custom message types and the plugin, RViz must be set up to
+track messages of type \texttt{PathStamped} on a topic with an arbitrary name.
+Then, by running \texttt{rostopic pub [/topic\_name] PathStamped [.yaml data]}
+the message gets sent to the topic and read by its subscriber, RViz. Once it
+receives the message it will be displayed as a pink line. The viewport can be
+moved around and the line properties can be edited. 
+
+\begin{listing}[H]
+    \centering
+    \begin{minipage}[t]{0.3\textwidth}
+        \begin{minted}[fontsize=\scriptsize, linenos, baselinestretch=0.8]{yaml}
+degree: 2
+weighted_points:  
+- 
+    x: 0.0
+    y: 0.0
+    z: 1.0
+- 
+    x: 3.0
+    y: 10.0
+    z: 1.0
+- 
+    x: 10.0
+    y: 3.0
+    z: 1.0
+-   
+    x: 10.0
+    y: 10.0
+    z: 1.0
+knot_vector:
+    - 0.0
+    - 0.0
+    - 0.0
+    - 0.5
+    - 1.0
+    - 1.0
+    - 1.0
+        \end{minted}
+    \end{minipage}%
+    \hfill
+    \begin{minipage}[t]{0.3\textwidth}
+        \begin{minted}[fontsize=\scriptsize, linenos, baselinestretch=0.8]{yaml}
+degree: 2
+weighted_points: 
+- 
+    x: 0.0
+    y: 0.0
+    z: 1.0
+- 
+    x: 6.0
+    y: 20.0
+    z: 2.0
+- 
+    x: 20.0
+    y: 6.0
+    z: 2.0
+-   
+    x: 10.0
+    y: 10.0
+    z: 1.0
+knot_vector:
+    - 0.0
+    - 0.0
+    - 0.0
+    - 0.5
+    - 1.0
+    - 1.0
+    - 1.0
+        \end{minted}
+    \end{minipage}%
+    \hfill
+    \begin{minipage}[t]{0.3\textwidth}
+        \begin{minted}[fontsize=\scriptsize, linenos, baselinestretch=0.8]{yaml}
+degree: 2
+weighted_points: 
+- 
+    x: 0.0
+    y: 0.0
+    z: 1.0
+- 
+    x: 3.0
+    y: 10.0
+    z: 1.0
+- 
+    x: 30.0
+    y: 9.0
+    z: 3.0
+-   
+    x: 10.0
+    y: 10.0
+    z: 1.0
+knot_vector:
+    - 0.0
+    - 0.0
+    - 0.0
+    - 0.1
+    - 1.0
+    - 1.0
+    - 1.0
+        \end{minted}
+    \end{minipage}
+    \caption{NURBS test configurations in YAML format: (left) no changes, (middle) with weights, (right) with weights and knot vector}
+    \label{lst:yaml-configs}
+\end{listing}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\linewidth]{normal.png}
+    \caption{RViz plugin displaying a uniform, unweighted NURBS curve}
+\end{figure} 
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\linewidth]{weights.png}
+    \caption{RViz plugin displaying a uniform, weighted NURBS curve}
+\end{figure} 
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\linewidth]{weight_knot.png}
+    \caption{RViz plugin displaying a non-uniform, weighted NURBS curve}
+\end{figure} 
 
 \end{document}
